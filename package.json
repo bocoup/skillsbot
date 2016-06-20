@@ -1,0 +1,40 @@
+{
+  "name": "expertisebot",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "get-secrets": "ssh nest.bocoup.com \"cat /mnt/secrets/{rds,expertisebot-slack,expertisebot-db-dev}\" > ./.env",
+    "db": "source .env && PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER $DB_NAME",
+    "start": "babel-node ./app",
+    "start-dev": "NOCACHE_SQL=1 grunt",
+    "test": "grunt test",
+    "migrate": "careen",
+    "migrate:up": "careen -A -e",
+    "migrate:down": "careen -R -e",
+    "migrate:create": "careen -C"
+  },
+  "dependencies": {
+    "@slack/client": "^3.4.0",
+    "babel-cli": "^6.8.0",
+    "babel-core": "^6.8.0",
+    "babel-plugin-transform-runtime": "^6.4.0",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-register": "^6.4.3",
+    "babel-runtime": "^6.3.19",
+    "bluebird": "^3.4.0",
+    "careen": "^0.1.1",
+    "chatter": "^0.4.0",
+    "dotenv": "^2.0.0",
+    "express": "^4.13.4",
+    "pg": "^5.0.0",
+    "pg-monitor": "^0.5.8",
+    "pg-promise": "^4.5.0",
+    "slack": "^7.2.0"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-cli": "^0.1.13",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-eslint": "^17.3.1"
+  }
+}
