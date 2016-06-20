@@ -64,12 +64,28 @@ CREATE TABLE interest_scale (
 );
 CREATE TRIGGER updated_at BEFORE UPDATE ON interest_scale
   FOR EACH ROW EXECUTE PROCEDURE updated_at();
+INSERT INTO interest_scale
+  (ranking, description)
+VALUES
+  (1, 'I really dislike this. Please do not ask me about this.'),
+  (2, 'I would like to avoid this if possible.'),
+  (3, 'I have no feelings for or against this.'),
+  (4, 'I like this.'),
+  (5, 'I love this. Please ask me about this!');
 
 CREATE TABLE experience_scale (
   like interest_scale INCLUDING ALL
 );
 CREATE TRIGGER updated_at BEFORE UPDATE ON experience_scale
   FOR EACH ROW EXECUTE PROCEDURE updated_at();
+INSERT INTO experience_scale
+  (ranking, description)
+VALUES
+  (1, 'I have no experience with this.'),
+  (2, 'I have some experience but I am not yet confident with this.'),
+  (3, 'I have some experience and feel confident with this.'),
+  (4, 'I have lots of experience and can teach others this.'),
+  (5, 'I would feel comfortable having a team of people rely on me for this.');
 
 CREATE TABLE expertise_slack_user_log (
   id SERIAL PRIMARY KEY,
