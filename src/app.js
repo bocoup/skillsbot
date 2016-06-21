@@ -2,23 +2,7 @@ import express from 'express';
 import slack from 'slack';
 import config from '../config';
 import {query} from './services/db';
-import createBot from './bot';
-
-// =================================
-// Get and set team integration data
-// =================================
-
-function activateTeamIntegration({payload, token, teamId}) {
-  return query.teamActivateInsertUpdate({payload, token, teamId});
-}
-
-function deactivateTeamIntegration({token}) {
-  return query.teamDeactivate({token});
-}
-
-function getTeamIntegrations() {
-  return query.teams();
-}
+import botRunner from './services/bot-runner';
 
 // ==========
 // Web server
@@ -77,7 +61,7 @@ app.get('/authorize', (req, res) => {
     }
     const token = payload.bot.bot_access_token;
     const teamId = payload.team_id;
-    activateTeamIntegration({payload, token, teamId})
+    query.teamActivateInsertUpdate({payload, token, teamId})
     .then(() => {
       redirectSuccess(res, 'Integration successful');
     })
@@ -91,46 +75,5 @@ app.get('/authorize', (req, res) => {
 app.listen(config.app.port, config.app.host);
 console.log(`Server running on ${config.app.host}:${config.app.port}.`);
 
-// =============================
-// Start and stop bots as needed
-// =============================
-
-const bots = {};
-
-// Start a bot if it's not already running.
-function startBot(token) {
-  if (!bots[token]) {
-    console.log('START', token);
-    const bot = createBot(token);
-    // Logging in ensures the rtm client has been created.
-    bot.login();
-    // If the rtm client disconnects because of account_inactive, the team
-    // integration has been terminated.
-    bot.slack.rtmClient.on('disconnect', (_, code) => {
-      if (code === 'account_inactive') {
-        deactivateTeamIntegration({token});
-      }
-    });
-    bots[token] = bot;
-  }
-}
-
-// Stop a bot if it's running.
-function stopBot(token) {
-  if (bots[token]) {
-    console.log('STOP', token);
-    // TODO: figure out how to actually free up the SlackBot instance memory
-    delete bots[token];
-  }
-}
-
-function startOrStopBots() {
-  getTeamIntegrations().then(teams => {
-    const active = teams.filter(t => t.is_active).map(t => t.token);
-    const inactive = teams.filter(t => !t.is_active).map(t => t.token);
-    active.forEach(token => startBot(token));
-    inactive.forEach(token => stopBot(token));
-  });
-}
-
-setInterval(startOrStopBots, 1000);
+// Start the bot runner that manages starting/stopping bots.
+botRunner.start();
