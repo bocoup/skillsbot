@@ -1,0 +1,9 @@
+- name: ensure upstart script for slack bot app is in place
+  template:
+    src: slack_bot.conf
+    dest: /etc/init
+
+- name: start app
+  service:
+    name: slack_bot
+    state: restarted
