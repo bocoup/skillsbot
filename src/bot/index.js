@@ -3,7 +3,7 @@ import {RtmClient, WebClient, MemoryDataStore} from '@slack/client';
 import mixinBotHelpers from './helpers';
 
 // Sub-commands.
-// import findCommand from './commands/find';
+import findCommand from './commands/find';
 // import {forCommand, meCommand} from './commands/for';
 import listCommand from './commands/list';
 import scalesCommand from './commands/scales';
@@ -36,7 +36,7 @@ export default function createBot(token) {
         name,
         description: 'Show your expertise.',
       }, [
-        // findCommand,
+        findCommand,
         // forCommand,
         // meCommand,
         listCommand,
