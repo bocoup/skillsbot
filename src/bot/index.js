@@ -5,7 +5,7 @@ import mixinBotHelpers from './helpers';
 // Sub-commands.
 // import findCommand from './commands/find';
 // import {forCommand, meCommand} from './commands/for';
-// import listCommand from './commands/list';
+import listCommand from './commands/list';
 import scalesCommand from './commands/scales';
 // import statsCommand from './commands/stats';
 // import updateCommand from './commands/update';
@@ -39,7 +39,7 @@ export default function createBot(token) {
         // findCommand,
         // forCommand,
         // meCommand,
-        // listCommand,
+        listCommand,
         scalesCommand,
         // statsCommand,
         // updateCommand,
