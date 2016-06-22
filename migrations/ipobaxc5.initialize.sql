@@ -74,7 +74,11 @@ VALUES
   (5, 'I love this. Please ask me about this!');
 
 CREATE TABLE experience_scale (
-  like interest_scale INCLUDING ALL
+  id SERIAL PRIMARY KEY,
+  description TEXT NOT NULL CHECK(description <> ''),
+  ranking INTEGER NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ
 );
 CREATE TRIGGER updated_at BEFORE UPDATE ON experience_scale
   FOR EACH ROW EXECUTE PROCEDURE updated_at();
