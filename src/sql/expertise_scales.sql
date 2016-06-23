@@ -1,4 +1,3 @@
-SELECT 'interest' AS type, description, ranking FROM interest_scale
-UNION ALL
-SELECT 'experience' AS type, description, ranking FROM experience_scale
-ORDER BY type, ranking
+SELECT
+  (SELECT ARRAY_AGG(ARRAY[ranking::text, description] ORDER BY ranking) FROM interest_scale) AS interest,
+  (SELECT ARRAY_AGG(ARRAY[ranking::text, description] ORDER BY ranking) FROM experience_scale) AS experience

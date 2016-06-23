@@ -1,12 +1,12 @@
 import {createCommand} from 'chatter';
-import {getIntExpScales} from '../lib/query';
+import {one} from '../../services/db';
 
 export default createCommand({
   name: 'scales',
   description: 'List interest and experience scales.',
 }, () => {
-  return getIntExpScales().then(({interest, experience}) => {
-    const list = o => Object.keys(o).map(k => `> *${k}.* ${o[k]}`);
+  return one.expertiseScales().then(({interest, experience}) => {
+    const list = arr => arr.map(([ranking, description]) => `> *${ranking}.* ${description}`);
     return [
       '*Interest:*',
       list(interest),
