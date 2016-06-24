@@ -1,6 +1,7 @@
 import {createSlackBot, createCommand, createConversation, createArgsAdjuster} from 'chatter';
 import {RtmClient, WebClient, MemoryDataStore} from '@slack/client';
 import mixinBotHelpers from './helpers';
+import config from '../../config';
 
 // Sub-commands.
 import findCommand from './commands/find';
@@ -9,6 +10,7 @@ import listCommand from './commands/list';
 import scalesCommand from './commands/scales';
 // import statsCommand from './commands/stats';
 // import updateCommand from './commands/update';
+import fixDbCommand from './commands/fix-db';
 
 export default function createBot(token) {
 
@@ -30,6 +32,8 @@ export default function createBot(token) {
       const name = channel.is_im ? null : 'expertise';
       // Helper method to format the given command name.
       const getCommand = cmd => name ? `${name} ${cmd}` : cmd;
+      // Dev-only commands.
+      const devCommands = [fixDbCommand];
 
       const expertiseCommand = createCommand({
         isParent: true,
@@ -43,6 +47,7 @@ export default function createBot(token) {
         scalesCommand,
         // statsCommand,
         // updateCommand,
+        ...(config.isProduction ? [] : devCommands),
       ]);
 
       return createConversation([
