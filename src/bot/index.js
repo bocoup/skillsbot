@@ -1,9 +1,10 @@
 import {createSlackBot} from 'chatter';
 import {RtmClient, WebClient, MemoryDataStore} from '@slack/client';
+import mixinBotHelpers from './helpers';
 
 export default function createBot(token) {
 
-  return createSlackBot({
+  const bot = createSlackBot({
     name: 'Expertise Test Bot',
     getSlack() {
       return {
@@ -19,5 +20,9 @@ export default function createBot(token) {
       return message => `You said "${message}".`;
     },
   });
+
+  mixinBotHelpers(bot);
+
+  return bot;
 
 }
