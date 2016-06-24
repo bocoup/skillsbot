@@ -8,7 +8,7 @@ import findCommand from './commands/find';
 import {forCommand, meCommand} from './commands/for';
 import listCommand from './commands/list';
 import scalesCommand from './commands/scales';
-// import statsCommand from './commands/stats';
+import statsCommand from './commands/stats';
 // import updateCommand from './commands/update';
 import fixDbCommand from './commands/fix-db';
 
@@ -45,7 +45,7 @@ export default function createBot(token) {
         meCommand,
         listCommand,
         scalesCommand,
-        // statsCommand,
+        statsCommand,
         // updateCommand,
         ...(config.isProduction ? [] : devCommands),
       ]);

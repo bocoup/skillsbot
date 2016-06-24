@@ -27,3 +27,22 @@ export function formatByInterestAndExperience(rows, fn) {
     }),
   ];
 }
+
+// Data formatting for expertise statistics
+export function formatExpertiseStats({interest, experience}) {
+  const graph = arr => {
+    const total = arr.reduce((sum, [, count]) => sum + count, 0);
+    return arr.map(([ranking, count]) => {
+      const pct = Math.round(count / total * 100);
+      const bar = CIRCLE_FILLED.repeat(count);
+      const parts = [bar, `${pct}%`].filter(Boolean);
+      return `> *${ranking}.* ${parts.join(' ')}`;
+    });
+  };
+  return [
+    '*Interest Distribution:*',
+    graph(interest),
+    '*Experience Distribution:*',
+    graph(experience),
+  ];
+}
