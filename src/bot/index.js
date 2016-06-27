@@ -9,7 +9,7 @@ import {forCommand, meCommand} from './commands/for';
 import listCommand from './commands/list';
 import scalesCommand from './commands/scales';
 import statsCommand from './commands/stats';
-// import updateCommand from './commands/update';
+import updateCommand from './commands/update';
 import fixDbCommand from './commands/fix-db';
 
 export default function createBot(token) {
@@ -46,7 +46,7 @@ export default function createBot(token) {
         listCommand,
         scalesCommand,
         statsCommand,
-        // updateCommand,
+        updateCommand,
         ...(config.isProduction ? [] : devCommands),
       ]);
 
