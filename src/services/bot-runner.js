@@ -13,7 +13,7 @@ const botRunner = new BotRunner({
     // If the rtm client disconnects because of account_inactive, the team
     // integration has been terminated.
     bot.slack.rtmClient.on('disconnect', (_, code) => {
-      if (code === 'account_inactive') {
+      if (code === 'account_inactive' || code === 'invalid_auth') {
         query.teamDeactivate({token});
       }
     });
