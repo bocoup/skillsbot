@@ -1,6 +1,7 @@
 import createBot from '../bot';
 import BotRunner from '../util/bot-runner';
 import {query} from './db';
+import {initSlackUserSync} from './sync-slack';
 
 // Start and stop bots as-necessary, automatically deactivating any bots that
 // become inactive.
@@ -17,6 +18,8 @@ const botRunner = new BotRunner({
         query.teamDeactivate({token});
       }
     });
+    // Ensure slack_user table stays synchronized with Slack.
+    initSlackUserSync(token, bot);
     return bot;
   },
   destroyBot(bot) {
