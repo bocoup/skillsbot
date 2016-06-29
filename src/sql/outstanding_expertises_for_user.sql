@@ -5,7 +5,7 @@ SELECT
   cat.name AS category
 FROM slack_user usr, expertise exp
 INNER JOIN expertise_category cat ON (cat.id = exp.expertise_category_id)
-WHERE usr.slack_id = ${userId}
+WHERE usr.is_active = true AND usr.slack_id = ${userId}
 AND exp.description IS NOT NULL
 AND (
   SELECT COUNT(*)
