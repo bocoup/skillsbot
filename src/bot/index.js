@@ -1,10 +1,22 @@
-import {createSlackBot} from 'chatter';
+import {createSlackBot, createCommand, createConversation, createArgsAdjuster} from 'chatter';
 import {RtmClient, WebClient, MemoryDataStore} from '@slack/client';
+import mixinBotHelpers from './helpers';
+import config from '../../config';
+
+// Sub-commands.
+import findCommand from './commands/find';
+import {forCommand, meCommand} from './commands/for';
+import listCommand from './commands/list';
+import scalesCommand from './commands/scales';
+import statsCommand from './commands/stats';
+import updateCommand from './commands/update';
+import fixDbCommand from './commands/fix-db';
 
 export default function createBot(token) {
 
-  return createSlackBot({
+  const bot = createSlackBot({
     name: 'Expertise Test Bot',
+    verbose: true,
     getSlack() {
       return {
         rtmClient: new RtmClient(token, {
@@ -15,9 +27,50 @@ export default function createBot(token) {
         webClient: new WebClient(token),
       };
     },
-    createMessageHandler() {
-      return message => `You said "${message}".`;
+    createMessageHandler(id, {channel}) {
+      // Give command a name in public channels.
+      const name = channel.is_im ? null : 'expertise';
+      // Helper method to format the given command name.
+      const getCommand = cmd => name ? `${name} ${cmd}` : cmd;
+      // Dev-only commands.
+      const devCommands = [fixDbCommand];
+
+      const expertiseCommand = createCommand({
+        isParent: true,
+        name,
+        description: 'Show your expertise.',
+      }, [
+        findCommand,
+        forCommand,
+        meCommand,
+        listCommand,
+        scalesCommand,
+        statsCommand,
+        updateCommand,
+        ...(config.isProduction ? [] : devCommands),
+      ]);
+
+      return createConversation([
+        createArgsAdjuster(
+          {
+            // Inject token and getCommand helper function into all commands'
+            // meta object (2nd argument).
+            adjustArgs(message, meta) {
+              return [message, Object.assign(meta, {
+                token,
+                teamId: meta.user.team_id,
+                getCommand,
+              })];
+            },
+          },
+          expertiseCommand
+        ),
+      ]);
     },
   });
+
+  mixinBotHelpers(bot);
+
+  return bot;
 
 }

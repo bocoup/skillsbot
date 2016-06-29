@@ -3,6 +3,7 @@
 require('dotenv').config();
 
 module.exports = {
+  isProduction: process.env.NODE_ENV === 'production',
   app: {
     host: process.env.HOST || '0.0.0.0',
     port: process.env.PORT || '8000',
