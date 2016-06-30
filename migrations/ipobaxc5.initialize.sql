@@ -12,9 +12,10 @@ CREATE TRIGGER updated_at BEFORE UPDATE ON slack_team
 
 CREATE TABLE slack_user (
   id SERIAL PRIMARY KEY,
-  slack_id TEXT NOT NULL,
+  slack_id TEXT NOT NULL UNIQUE CHECK(slack_id <> ''),
   slack_team_id INTEGER NOT NULL REFERENCES slack_team(id),
-  name TEXT NOT NULL CHECK(name <> ''),
+  is_active BOOLEAN NOT NULL DEFAULT false,
+  meta JSONB,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
 );
