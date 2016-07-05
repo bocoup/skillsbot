@@ -10,7 +10,7 @@ import listCommand from './commands/list';
 import scalesCommand from './commands/scales';
 import statsCommand from './commands/stats';
 import updateCommand from './commands/update';
-import fixDbCommand from './commands/fix-db';
+import bocoupImportCommand from './commands/bocoup-import';
 
 export default function createBot(token) {
 
@@ -33,7 +33,7 @@ export default function createBot(token) {
       // Helper method to format the given command name.
       const getCommand = cmd => name ? `${name} ${cmd}` : cmd;
       // Dev-only commands.
-      const devCommands = [fixDbCommand];
+      const devCommands = [bocoupImportCommand];
 
       const expertiseCommand = createCommand({
         isParent: true,
