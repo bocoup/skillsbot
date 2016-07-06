@@ -22,62 +22,74 @@ const src = pgp({
   password: process.env.BOCOUP_DB_PASSWORD,
 });
 
+// Word pluralization helper.
+const p = (base, pluralSuffix, num) => base.replace(/_/, num) + (num !== 1 ? pluralSuffix : '');
+
+// Bulk insertion helper.
+const getInserter = (table, columns) => records => {
+  console.log(`Inserting ${p('_ record', 's', records.length)}...`);
+  return db.none(pgp.helpers.insert(records, columns, table));
+};
+// Select from source database.
+const getSrcQuery = queryStr => (...args) => src.query(queryStr, ...args);
+// Select from destination database.
+const getDestQuery = queryStr => (...args) => db.query(queryStr, ...args);
+
+
 const q = {
-  getTeamId: `
+  // Misc.
+  getTeamId: () => db.one(`
     SELECT id FROM slack_team WHERE slack_id = 'T025GMFDP' AND is_active = true
-  `,
-  getCategories: `
-    SELECT id, name FROM expertise_area;
-  `,
-  insertCategories: `
-    INSERT INTO expertise_category (
+  `).get('id'),
+  fixAndCleanup: getDestQuery(`
+    SELECT SETVAL('expertise_id_seq', (SELECT MAX(id) FROM expertise));
+    SELECT SETVAL('expertise_category_id_seq', (SELECT MAX(id) FROM expertise_category));
+  `),
+  // Categories.
+  getCategories: getSrcQuery(`
+    SELECT
       id,
-      slack_team_id,
       name
-    ) VALUES ($[id], $[teamId], $[name])
-  `,
-  getExpertises: `
+    FROM expertise_area;
+  `),
+  insertCategories: getInserter('expertise_category', [
+    'id',
+    'slack_team_id',
+    'name',
+  ]),
+  // Expertises.
+  getExpertises: getSrcQuery(`
     SELECT
       id,
       expertise_area_id AS expertise_category_id,
       name,
       description
     FROM expertise
-  `,
-  insertExpertises: `
-    INSERT INTO expertise (
-      id,
-      expertise_category_id,
-      name,
-      description
-    ) VALUES ($[id],$[expertise_category_id],$[name],$[description])
-  `,
-  getSrcUsers: `
+  `),
+  insertExpertises: getInserter('expertise', [
+    'id',
+    'expertise_category_id',
+    'name',
+    'description',
+  ]),
+  // Users.
+  getSrcUsers: getSrcQuery(`
     SELECT
       id,
       slack AS name
     FROM employee
     WHERE slack IS NOT NULL
     ORDER BY id
-  `,
-  getDestUsers: `
+  `),
+  getDestUsers: getDestQuery(`
     SELECT
       id,
       slack_id
     FROM slack_user
-    WHERE slack_team_id = $[teamId]
     ORDER BY id
-  `,
-  insertUsers: `
-    INSERT INTO slack_user (
-      id,
-      slack_id,
-      slack_team_id,
-      is_active,
-      meta
-    ) VALUES ($[id], $[slackId], $[teamId], $[isActive], $[meta])
-  `,
-  getExpertiseLog: `
+  `),
+  // Expertise log.
+  getExpertiseLog: getSrcQuery(`
     SELECT
       expertise_id,
       employee_id,
@@ -87,41 +99,16 @@ const q = {
       created_at,
       updated_at
     FROM employee_expertise
-  `,
-  insertExpertiseLog: `
-    INSERT INTO expertise_slack_user_log (
-      expertise_id,
-      slack_user_id,
-      experience_scale_id,
-      interest_scale_id,
-      reason,
-      created_at,
-      updated_at
-    ) VALUES (
-      $[expertise_id],
-      $[userId],
-      $[experience_scale_id],
-      $[interest_scale_id],
-      $[reason],
-      $[created_at],
-      $[updated_at]
-    );
-  `,
-  fixAndCleanup: `
-    SELECT SETVAL('slack_user_id_seq', (SELECT MAX(id) FROM slack_user));
-    SELECT SETVAL('expertise_id_seq', (SELECT MAX(id) FROM expertise));
-    SELECT SETVAL('expertise_category_id_seq', (SELECT MAX(id) FROM expertise_category));
-  `,
-};
-
-const getBatches = length => arr => {
-  let i = 0;
-  const result = [];
-  while (i < arr.length) {
-    result.push(arr.slice(i, i + length));
-    i += length;
-  }
-  return result;
+  `),
+  insertExpertiseLog: getInserter('expertise_slack_user_log', [
+    'expertise_id',
+    'slack_user_id',
+    'experience_scale_id',
+    'interest_scale_id',
+    'reason',
+    'created_at',
+    'updated_at',
+  ]),
 };
 
 export default createCommand({
@@ -140,8 +127,8 @@ export default createCommand({
       oldUserIdToNewUserId[slackIdToOldUserId[user.slack_id]] = user.id;
     });
     // Adjust expertise log records to have the new slack_user id.
-    const adjustExpertiseLog = records => records.map(record => {
-      record.userId = oldUserIdToNewUserId[record.employee_id];
+    const addSlackUserIdToRows = records => records.map(record => {
+      record.slack_user_id = oldUserIdToNewUserId[record.employee_id];
       return record;
     });
 
@@ -151,49 +138,23 @@ export default createCommand({
       teamId = id;
     };
     const addTeamIdToRows = rows => rows.map(row => {
-      row.teamId = teamId;
+      row.slack_team_id = teamId;
       return row;
     });
 
-    // Select from source database.
-    const getSrcQuery = (query, method = 'query') => (...args) => src[method](query, ...args);
-    // Select from destination database.
-    const getDestQuery = (query, method = 'query') => (...args) => db[method](query, ...args);
-
-    // Word pluralization helper.
-    const p = (base, pluralSuffix, num) => base.replace(/_/, num) + (num !== 1 ? pluralSuffix : '');
-
-    // Insert into destination database.
-    const getInsertQuery = insertQuery => inputRecords => {
-      const batchSize = 100;
-      let batchCount;
-      let i = 0;
-      return Promise.resolve(inputRecords)
-      .tap(r => {
-        batchCount = Math.ceil(r.length / batchSize);
-        console.log(`Inserting ${p('_ record', 's', r.length)} in ${p('_ batch', 'es', batchCount)}...`);
-      })
-      .then(addTeamIdToRows)
-      .then(getBatches(batchSize)).mapSeries(records => {
-        i++;
-        console.log(`Processing batch ${i}/${batchCount}`);
-        return db.tx(tx => tx.batch(records.map(record => tx.none(insertQuery, record))));
-      });
-    };
-
     // Get and store current bot slack_item id.
-    return getDestQuery(q.getTeamId, 'one')().get('id').then(setTeamId)
+    return q.getTeamId().then(setTeamId)
     // Migrate expertise categories.
-    .then(getSrcQuery(q.getCategories)).then(getInsertQuery(q.insertCategories))
+    .then(q.getCategories).then(addTeamIdToRows).then(q.insertCategories)
     // Migrate expertises.
-    .then(getSrcQuery(q.getExpertises)).then(getInsertQuery(q.insertExpertises))
-    // Create a oldId-newId mapping for existing Bocoupers.
-    .then(getSrcQuery(q.getSrcUsers)).then(updateUserMapPart1)
-    .then(() => getDestQuery(q.getDestUsers)({teamId})).then(updateUserMapPart2)
+    .then(q.getExpertises).then(q.insertExpertises)
+    // Create a oldId-newId mapping for existing users.
+    .then(q.getSrcUsers).then(updateUserMapPart1)
+    .then(q.getDestUsers).then(updateUserMapPart2)
     // Migrate expertise log, translating old user ids to their new values.
-    .then(getSrcQuery(q.getExpertiseLog)).then(adjustExpertiseLog).then(getInsertQuery(q.insertExpertiseLog))
+    .then(q.getExpertiseLog).then(addSlackUserIdToRows).then(q.insertExpertiseLog)
     // Ensure indices increment from the proper value.
-    .then(getDestQuery(q.fixAndCleanup));
+    .then(q.fixAndCleanup);
   })
   .then(() => {
     console.log('Import done!');
