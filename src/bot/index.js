@@ -28,8 +28,9 @@ export default function createBot(token) {
       };
     },
     createMessageHandler(id, {channel}) {
-      // Give command a name in public channels.
-      const name = channel.is_im ? null : 'expertise';
+      // Get name and aliases for bot, based on the actual bot name, and
+      // whether or not the bot is in a public channel or DM.
+      const {name, aliases} = this.getBotNameAndAliases(channel.is_im);
       // Helper method to format the given command name.
       const getCommand = cmd => name ? `${name} ${cmd}` : cmd;
       // Dev-only commands.
@@ -38,6 +39,7 @@ export default function createBot(token) {
       const expertiseCommand = createCommand({
         isParent: true,
         name,
+        aliases,
         description: 'Show your expertise.',
       }, [
         findCommand,
