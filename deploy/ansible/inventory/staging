@@ -3,4 +3,4 @@
 # production server's FQDN. This is likely the only change you will need to
 # make between production and staging.
 
-expertise-staging.bocoup.com site_fqdn=expertise-staging.bocoup.com
+skillsbot-staging.bocoup.com site_fqdn=skillsbot-staging.bocoup.com

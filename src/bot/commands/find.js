@@ -1,31 +1,31 @@
 import Promise from 'bluebird';
 import {createCommand, createParser} from 'chatter';
 import {query, one} from '../../services/db';
-import {findExpertiseAndHandleErrors} from '../lib/query';
+import {findSkillAndHandleErrors} from '../lib/query';
 import {formatByInterestAndExperience} from '../lib/formatting';
 
 export default createCommand({
   name: 'find',
-  description: 'List all team members with the given expertise, grouped by interest and experience.',
-  usage: '<expertise name>',
+  description: 'List all team members with the given skill, grouped by interest and experience.',
+  usage: '<skill name>',
 }, createParser(({args}, {bot, teamId, getCommand}) => {
   const search = args.join(' ');
   if (!search) {
     return false;
   }
   const output = [];
-  return findExpertiseAndHandleErrors(teamId, search).then(results => {
-    const {match: {id: expertiseId}} = results;
+  return findSkillAndHandleErrors(teamId, search).then(results => {
+    const {match: {id: skillId, name: skillName}} = results;
     const updateCommand = `update ${search.toLowerCase()}`;
     output.push(results.output);
     return Promise.all([
-      query.currentUsersForExpertise({expertiseId}),
-      one.outstandingUsersForExpertise({expertiseId}).get('users'),
+      query.currentUsersForSkill({skillId}),
+      one.outstandingUsersForSkill({skillId}).get('users'),
     ])
     .spread((userData, outstanding) => [
       outstanding && `> *No data for:* ${outstanding.map(bot.formatId).join(', ')}`,
       formatByInterestAndExperience(userData, o => o.users.map(bot.formatId).join(', ')),
-      `_Update your expertise with_ \`${getCommand(updateCommand)}\`.`,
+      `_Update your *${skillName}* skill with_ \`${getCommand(updateCommand)}\`.`,
     ]);
   })
   // Success! Print all cached output + final message.

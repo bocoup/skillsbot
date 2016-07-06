@@ -28,8 +28,8 @@ export function formatByInterestAndExperience(rows, fn) {
   ];
 }
 
-// Data formatting for expertise statistics
-export function formatExpertiseStats({interest, experience}) {
+// Data formatting for skill statistics
+export function formatSkillStats({interest, experience}) {
   const graph = arr => {
     const total = arr.reduce((sum, [, count]) => sum + count, 0);
     return arr.map(([ranking, count]) => {

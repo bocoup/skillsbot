@@ -42,8 +42,8 @@ const q = {
     SELECT id FROM slack_team WHERE slack_id = 'T025GMFDP' AND is_active = true
   `).get('id'),
   fixAndCleanup: getDestQuery(`
-    SELECT SETVAL('expertise_id_seq', (SELECT MAX(id) FROM expertise));
-    SELECT SETVAL('expertise_category_id_seq', (SELECT MAX(id) FROM expertise_category));
+    SELECT SETVAL('skill_id_seq', (SELECT MAX(id) FROM skill));
+    SELECT SETVAL('skill_category_id_seq', (SELECT MAX(id) FROM skill_category));
   `),
   // Categories.
   getCategories: getSrcQuery(`
@@ -52,23 +52,23 @@ const q = {
       name
     FROM expertise_area;
   `),
-  insertCategories: getInserter('expertise_category', [
+  insertCategories: getInserter('skill_category', [
     'id',
     'slack_team_id',
     'name',
   ]),
-  // Expertises.
+  // Expertises -> skills.
   getExpertises: getSrcQuery(`
     SELECT
       id,
-      expertise_area_id AS expertise_category_id,
+      expertise_area_id AS skill_category_id,
       name,
       description
     FROM expertise
   `),
-  insertExpertises: getInserter('expertise', [
+  insertSkills: getInserter('skill', [
     'id',
-    'expertise_category_id',
+    'skill_category_id',
     'name',
     'description',
   ]),
@@ -88,10 +88,10 @@ const q = {
     FROM slack_user
     ORDER BY id
   `),
-  // Expertise log.
+  // Skill log.
   getExpertiseLog: getSrcQuery(`
     SELECT
-      expertise_id,
+      expertise_id AS skill_id,
       employee_id,
       experience_rating AS experience_scale_id,
       interest_rating AS interest_scale_id,
@@ -100,8 +100,8 @@ const q = {
       updated_at
     FROM employee_expertise
   `),
-  insertExpertiseLog: getInserter('expertise_slack_user_log', [
-    'expertise_id',
+  insertSkillLog: getInserter('skill_slack_user_log', [
+    'skill_id',
     'slack_user_id',
     'experience_scale_id',
     'interest_scale_id',
@@ -126,7 +126,7 @@ export default createCommand({
     const updateUserMapPart2 = users => users.forEach(user => {
       oldUserIdToNewUserId[slackIdToOldUserId[user.slack_id]] = user.id;
     });
-    // Adjust expertise log records to have the new slack_user id.
+    // Adjust skill log records to have the new slack_user id.
     const addSlackUserIdToRows = records => records.map(record => {
       record.slack_user_id = oldUserIdToNewUserId[record.employee_id];
       return record;
@@ -144,15 +144,15 @@ export default createCommand({
 
     // Get and store current bot slack_item id.
     return q.getTeamId().then(setTeamId)
-    // Migrate expertise categories.
+    // Migrate skill categories.
     .then(q.getCategories).then(addTeamIdToRows).then(q.insertCategories)
-    // Migrate expertises.
-    .then(q.getExpertises).then(q.insertExpertises)
+    // Migrate skills.
+    .then(q.getExpertises).then(q.insertSkills)
     // Create a oldId-newId mapping for existing users.
     .then(q.getSrcUsers).then(updateUserMapPart1)
     .then(q.getDestUsers).then(updateUserMapPart2)
-    // Migrate expertise log, translating old user ids to their new values.
-    .then(q.getExpertiseLog).then(addSlackUserIdToRows).then(q.insertExpertiseLog)
+    // Migrate skill log, translating old user ids to their new values.
+    .then(q.getExpertiseLog).then(addSlackUserIdToRows).then(q.insertSkillLog)
     // Ensure indices increment from the proper value.
     .then(q.fixAndCleanup);
   })

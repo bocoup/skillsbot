@@ -15,7 +15,7 @@ import bocoupImportCommand from './commands/bocoup-import';
 export default function createBot(token) {
 
   const bot = createSlackBot({
-    name: 'Expertise Test Bot',
+    name: 'Skills Bot',
     verbose: true,
     getSlack() {
       return {
@@ -36,11 +36,11 @@ export default function createBot(token) {
       // Dev-only commands.
       const devCommands = [bocoupImportCommand];
 
-      const expertiseCommand = createCommand({
+      const skillsCommand = createCommand({
         isParent: true,
         name,
         aliases,
-        description: 'Show your expertise.',
+        description: 'Show your skills.',
       }, [
         findCommand,
         forCommand,
@@ -65,7 +65,7 @@ export default function createBot(token) {
               })];
             },
           },
-          expertiseCommand
+          skillsCommand
         ),
       ]);
     },
