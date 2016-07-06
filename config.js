@@ -12,6 +12,7 @@ module.exports = {
   tokens: {
     client_id: process.env.SLACK_CLIENT_ID,
     client_secret: process.env.SLACK_CLIENT_SECRET,
+    verification: process.env.SLACK_VERIFICATION_TOKEN,
   },
   db: {
     host: process.env.DB_HOST,
