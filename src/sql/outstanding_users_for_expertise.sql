@@ -1,7 +1,7 @@
 SELECT
   ARRAY_AGG(usr.slack_id) AS users
 FROM slack_user usr, expertise exp
-WHERE exp.id = ${expertiseId}
+WHERE usr.is_active = true AND exp.id = ${expertiseId}
 AND (
   SELECT COUNT(*)
   FROM expertise_current cur
