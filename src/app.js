@@ -109,7 +109,7 @@ app.post('/command', (req, res) => {
     type: 'message',
     channel: dmId,
     user: userId,
-    text,
+    text: text || 'help',
   });
   // Show the actual command text if the slash command was used in the DM.
   if (dmId === channelId) {
