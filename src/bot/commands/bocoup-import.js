@@ -1,9 +1,11 @@
 import Promise from 'bluebird';
 import pgPromise from 'pg-promise';
 import pgMonitor from 'pg-monitor';
-import {createCommand} from 'chatter';
+import {createMatcher} from 'chatter';
 import config from '../../../config';
 import {db} from '../../services/db';
+
+const {bocoupTeamId} = config;
 
 const options = {
   promiseLib: Promise,
@@ -38,9 +40,16 @@ const getDestQuery = queryStr => (...args) => db.query(queryStr, ...args);
 
 const q = {
   // Misc.
+  checkIfCanImport: () => db.one(`
+    SELECT GREATEST (
+      0,
+      (SELECT COUNT(*) FROM skill LIMIT 1),
+      (SELECT COUNT(*) FROM skill_category LIMIT 1)
+    )
+  `).get('greatest').then(r => r === '0'),
   getTeamId: () => db.one(`
-    SELECT id FROM slack_team WHERE slack_id = 'T025GMFDP' AND is_active = true
-  `).get('id'),
+    SELECT id FROM slack_team WHERE slack_id = $[bocoupTeamId] AND is_active = true
+  `, {bocoupTeamId}).get('id'),
   fixAndCleanup: getDestQuery(`
     SELECT SETVAL('skill_id_seq', (SELECT MAX(id) FROM skill));
     SELECT SETVAL('skill_category_id_seq', (SELECT MAX(id) FROM skill_category));
@@ -111,11 +120,10 @@ const q = {
   ]),
 };
 
-export default createCommand({
-  name: 'bocoup-import',
-  description: 'Import Bocoup database.',
+export default createMatcher({
+  match: 'bocoup-import',
 }, (message, {bot}) => {
-  return db.task(function() {
+  const importData = () => db.task(function() {
     // Bocoup employee name-id mappings.
     const slackIdToOldUserId = {};
     const oldUserIdToNewUserId = {};
@@ -163,5 +171,13 @@ export default createCommand({
   .catch(error => {
     console.log(error.stack);
     return `Error: \`${error.message}\``;
+  });
+  // Check to see if an import can be done safely.
+  return q.checkIfCanImport()
+  .then(canImport => {
+    if (!canImport) {
+      return 'The Bocoup expertise database import must be run on a fresh database with no skills or categories.';
+    }
+    return importData();
   });
 });
