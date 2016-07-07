@@ -5,7 +5,7 @@ export default createCommand({
   name: 'scales',
   description: 'List interest and experience scales.',
 }, () => {
-  return one.expertiseScales().then(({interest, experience}) => {
+  return one.scales().then(({interest, experience}) => {
     const list = arr => arr.map(([ranking, description]) => `> *${ranking}.* ${description}`);
     return [
       '*Interest:*',

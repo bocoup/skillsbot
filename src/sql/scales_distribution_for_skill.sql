@@ -1,23 +1,23 @@
-WITH expertise_ranking AS (
+WITH skill_ranking AS (
   SELECT
     interest_scale_id,
     experience_scale_id
-  FROM expertise_current
-  WHERE expertise_id = ${expertiseId}
+  FROM skill_current
+  WHERE skill_id = ${skillId}
 ), interest_count AS ( 
   SELECT
     ranking::numeric,
     COUNT(r) AS count
-  FROM interest_scale i_scale
-  LEFT JOIN expertise_ranking r ON (r.interest_scale_id = i_scale.id)
+  FROM interest_scale int
+  LEFT JOIN skill_ranking r ON (r.interest_scale_id = int.id)
   GROUP BY ranking
   ORDER BY ranking
 ), experience_count AS ( 
   SELECT
     ranking::numeric,
     COUNT(r) AS count
-  FROM experience_scale e_scale
-  LEFT JOIN expertise_ranking r ON (r.experience_scale_id = e_scale.id)
+  FROM experience_scale exp
+  LEFT JOIN skill_ranking r ON (r.experience_scale_id = exp.id)
   GROUP BY ranking
   ORDER BY ranking
 )

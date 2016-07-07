@@ -3,19 +3,19 @@ import moment from 'moment';
 import heredoc from 'heredoc-tag';
 import {createCommand, createMatcher, createParser} from 'chatter';
 import {one, oneOrNone, none, query} from '../../services/db';
-import {findExpertiseAndHandleErrors, abort} from '../lib/query';
+import {findSkillAndHandleErrors, abort} from '../lib/query';
 import {questions} from '../lib/dialog';
 
 const intExpProps = ['interest', 'experience'];
 
-function updateExpertise({userId, expertise, newValues}) {
-  const {id: expertiseId} = expertise;
+function updateSkill({userId, skill, newValues}) {
+  const {id: skillId} = skill;
   const {interest, experience, reason = ''} = newValues;
   return Promise.mapSeries([
     // Get current values. This has to be done before getting the new values!
-    () => oneOrNone.currentExpertiseValues({userId, expertiseId}),
+    () => oneOrNone.currentSkillValues({userId, skillId}),
     // Update database with new values.
-    () => none.updateExpertise({userId, expertiseId, experience, interest, reason}),
+    () => none.updateSkill({userId, skillId, experience, interest, reason}),
   ], f => f())
   .spread(oldValues => {
     // Show a summary of the changes.
@@ -30,39 +30,39 @@ function updateExpertise({userId, expertise, newValues}) {
       return `${name} changed from ${oldValues[prop]} to ${newValues[prop]}.`;
     });
     return [
-      `Expertise for *${expertise.name}* updated:`,
+      `Skill for *${skill.name}* updated:`,
       summary.map(s => `> ${s}`),
-      Boolean(reason) && `Reason set to "${reason}"`,
+      Boolean(reason) && `> Reason set to "${reason}"`,
     ];
   });
 }
 
 // =================================
-// expertise update <expertise name>
+// update <skill name>
 // =================================
 
-function updateExpertiseQuestions(state, headers) {
+function updateSkillQuestions(state, headers) {
   const {
     scales,
     oldValues,
     newValues,
     userId,
-    expertise,
-    expertiseName,
+    skill,
+    skillName,
     updateCommand,
     getCommand,
     skippable,
     done,
   } = state;
 
-  const startOver = () => updateExpertiseQuestions(state, ['_Starting over._']);
+  const startOver = () => updateSkillQuestions(state, ['_Starting over._']);
 
   const hasInterestChanged = () => !oldValues || newValues.interest !== oldValues.interest;
   const hasExperienceChanged = () => !oldValues || newValues.experience !== oldValues.experience;
 
   function getInterestQuestion() {
     return {
-      question: `Choose your interest level for ${expertiseName}:`,
+      question: `Choose your interest level for ${skillName}:`,
       choices: scales.interest,
       onAnswer: answer => {
         newValues.interest = Number(answer);
@@ -73,7 +73,7 @@ function updateExpertiseQuestions(state, headers) {
 
   function getExperienceQuestion() {
     return {
-      question: `Choose your experience level for ${expertiseName}:`,
+      question: `Choose your experience level for ${skillName}:`,
       choices: scales.experience,
       onAnswer: answer => {
         newValues.experience = Number(answer);
@@ -85,20 +85,20 @@ function updateExpertiseQuestions(state, headers) {
   function getConfirmNoChangeQuestion() {
     return {
       question: heredoc.trim.unindent`
-        Your interest and experience for ${expertiseName} haven't changed! Is this ok?
+        Your interest and experience for ${skillName} haven't changed! Is this ok?
         > Interest: *${scales.interest[newValues.interest]}*
         > Experience: *${scales.experience[newValues.experience]}*
 
       `,
       choices: [
         `Continue without making changes.`,
-        `No, re-choose interest and experience for ${expertiseName}.`,
+        `No, re-choose interest and experience for ${skillName}.`,
       ],
       onAnswer(answer) {
         if (answer === 2) {
           return startOver();
         }
-        return done(`_Expertise for *${expertise.expertise}* unchanged._`);
+        return done(`_Skill data for *${skill.name}* unchanged._`);
       },
     };
   }
@@ -111,7 +111,7 @@ function updateExpertiseQuestions(state, headers) {
       const str1 = parts.length === 1 ? 'has' : 'have';
       const str2 = parts.join(' and ');
       return {
-        question: `Why ${str1} your ${str2} changed for ${expertiseName}?`,
+        question: `Why ${str1} your ${str2} changed for ${skillName}?`,
         onAnswer: answer => {
           newValues.reason = answer;
           return '_Noted!_';
@@ -124,20 +124,20 @@ function updateExpertiseQuestions(state, headers) {
     const reason = 'reason' in newValues ? `> Reason: *${newValues.reason}*\n` : '';
     return {
       question: heredoc.trim.unindent`
-        You've entered the following for ${expertiseName}. Is this ok?
+        You've entered the following for ${skillName}. Is this ok?
         > Interest: *${scales.interest[newValues.interest]}*
         > Experience: *${scales.experience[newValues.experience]}*
         ${reason}
       `,
       choices: [
         `Save these changes.`,
-        `No, re-choose interest and experience for ${expertiseName}.`,
+        `No, re-choose interest and experience for ${skillName}.`,
       ],
       onAnswer(answer) {
         if (answer === 2) {
           return startOver();
         }
-        return updateExpertise({userId, expertise, newValues}).then(done);
+        return updateSkill({userId, skill, newValues}).then(done);
       },
     };
   }
@@ -164,27 +164,27 @@ function updateExpertiseQuestions(state, headers) {
     },
     onExit(exit) {
       if (exit === 'skip') {
-        return done(`_Skipping ${expertiseName} for now!_`, true);
+        return done(`_Skipping ${skillName} for now!_`, true);
       }
       return `Canceled, please type \`${getCommand(updateCommand)}\` to try again.`;
     },
   });
 }
 
-function updateExpertiseDialog({
+function updateSkillDialog({
   userId,
-  expertise,
+  skill,
   updateCommand,
   getCommand,
   oneTimeHeader = null,
   skippable = false,
   done,
 }) {
-  const {id: expertiseId} = expertise;
-  const expertiseName = `*${expertise.name}*`;
+  const {id: skillId} = skill;
+  const skillName = `*${skill.name}*`;
   return Promise.all([
-    one.expertiseScales(),
-    oneOrNone.currentExpertiseValues({userId, expertiseId}),
+    one.scales(),
+    oneOrNone.currentSkillValues({userId, skillId}),
   ])
   .spread((scales, oldValues) => {
     // Reformat scales object into a per-scale map of ranking-to-description.
@@ -197,7 +197,7 @@ function updateExpertiseDialog({
     let lastUpdated;
     if (oldValues) {
       const formatted = moment.duration(-oldValues.age, 'seconds').humanize(true);
-      lastUpdated = `_You last updated this expertise *${formatted}*._`;
+      lastUpdated = `_You last updated this skill *${formatted}*._`;
     }
 
     const state = {
@@ -205,67 +205,67 @@ function updateExpertiseDialog({
       oldValues,
       newValues: {},
       userId,
-      expertise,
-      expertiseName,
+      skill,
+      skillName,
       updateCommand,
       getCommand,
       skippable,
       done,
     };
 
-    return updateExpertiseQuestions(state, [
+    return updateSkillQuestions(state, [
       [
         oneTimeHeader,
       ],
       [
         lastUpdated,
         '',
-        `> ${expertiseName} / *${expertise.category}*`,
-        expertise.description && `${expertise.description.replace(/^/gm, '> ')}`,
+        `> ${skillName} / *${skill.category}*`,
+        skill.description && `${skill.description.replace(/^/gm, '> ')}`,
       ],
     ]);
   });
 }
 
 // ========================
-// expertise update missing
+// update missing
 // ========================
 
 function updateMissing(userId, getCommand) {
   let i = 0;
   const skipped = [];
-  const expertiseCount = n => `${n.length} expertise${n.length === 1 ? '' : 's'}`;
+  const skillCount = n => `${n.length} skill${n.length === 1 ? '' : 's'}`;
   function next(header) {
     i++;
-    return query.outstandingExpertisesForUser({userId})
+    return query.outstandingSkillsForUser({userId})
     .then(missing => {
       const notSkipped = missing.filter(({id}) => skipped.indexOf(id) === -1);
       if (notSkipped.length === 0) {
         const done = i > 1 ? 'Done. ' : '';
         return [
           header,
-          missing.length === 0 ? `${done}You have no outstanding expertise data.` :
-            `${done}You still have outstanding expertise data for ${expertiseCount(missing)}.`,
-          `View your expertise list with \`${getCommand('me')}\`.`,
+          missing.length === 0 ? `${done}You have no outstanding skill data.` :
+            `${done}You still have outstanding skill data for ${skillCount(missing)}.`,
+          `View your skill list with \`${getCommand('me')}\`.`,
         ];
       }
-      const expertise = notSkipped[0];
+      const skill = notSkipped[0];
       const identifier = notSkipped.length === 1 ? 'it' : i === 1 ? 'the first' : 'the next';
       const now = i > 1 ? ' now' : '';
       const skipTxt = skipped.length > 0 ? ` (you've skipped ${skipped.length})` : '';
-      return updateExpertiseDialog({
+      return updateSkillDialog({
         userId,
-        expertise,
+        skill,
         updateCommand: 'update missing',
         getCommand,
         oneTimeHeader: [
           header && [header, ''],
-          `I${now} need data for ${expertiseCount(notSkipped)}${skipTxt}. Let's update ${identifier}:`,
+          `I${now} need data for ${skillCount(notSkipped)}${skipTxt}. Let's update ${identifier}:`,
         ],
         skippable: true,
         done: (result, skip) => {
           if (skip) {
-            skipped.push(expertise.id);
+            skipped.push(skill.id);
           }
           return next(result);
         },
@@ -277,8 +277,8 @@ function updateMissing(userId, getCommand) {
 
 export default createCommand({
   name: 'update',
-  description: 'Update your interest and experience for the given expertise.',
-  usage: '[missing | <expertise name> [interest=<1-5> experience=<1-5>]]',
+  description: 'Update your interest and experience for the given skill.',
+  usage: '[missing | <skill name> [interest=<1-5> experience=<1-5>]]',
 }, [
   createMatcher({match: 'missing'}, (_, {user, getCommand}) => updateMissing(user.id, getCommand)),
   createParser({
@@ -297,23 +297,23 @@ export default createCommand({
     const done = message => [
       output,
       message,
-      `View your expertise list with \`${getCommand('me')}\`.`,
+      `View your skill list with \`${getCommand('me')}\`.`,
     ];
 
-    return findExpertiseAndHandleErrors(teamId, search).then(results => {
+    return findSkillAndHandleErrors(teamId, search).then(results => {
       output.push(results.output);
-      const {match: expertise} = results;
+      const {match: skill} = results;
       const numProps = intExpProps.reduce((n, p) => n + (p in newValues), 0);
       if (numProps === 1) {
         throw abort(`_You must update both interest and experience at the same time._`);
       }
       else if (numProps === 2) {
-        return updateExpertise({userId, expertise, newValues}).then(done);
+        return updateSkill({userId, skill, newValues}).then(done);
       }
       const updateCommand = `update ${search.toLowerCase()}`;
-      return updateExpertiseDialog({
+      return updateSkillDialog({
         userId,
-        expertise,
+        skill,
         updateCommand,
         getCommand,
         oneTimeHeader: output.splice(0, output.length),

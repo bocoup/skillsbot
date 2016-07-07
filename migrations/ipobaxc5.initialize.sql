@@ -22,27 +22,27 @@ CREATE TABLE slack_user (
 CREATE TRIGGER updated_at BEFORE UPDATE ON slack_user
   FOR EACH ROW EXECUTE PROCEDURE updated_at();
 
-CREATE TABLE expertise_category (
+CREATE TABLE skill_category (
   id SERIAL PRIMARY KEY,
-  parent_id INTEGER REFERENCES expertise_category(id),
+  parent_id INTEGER REFERENCES skill_category(id),
   name TEXT NOT NULL CHECK(name <> ''),
   slack_team_id INTEGER NOT NULL REFERENCES slack_team(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
 );
-CREATE TRIGGER updated_at BEFORE UPDATE ON expertise_category
+CREATE TRIGGER updated_at BEFORE UPDATE ON skill_category
   FOR EACH ROW EXECUTE PROCEDURE updated_at();
 
-CREATE TABLE expertise (
+CREATE TABLE skill (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL CHECK(name <> ''),
   description TEXT,
-  expertise_category_id INTEGER NOT NULL REFERENCES expertise_category(id),
+  skill_category_id INTEGER NOT NULL REFERENCES skill_category(id),
   meta JSONB,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
 );
-CREATE TRIGGER updated_at BEFORE UPDATE ON expertise
+CREATE TRIGGER updated_at BEFORE UPDATE ON skill
   FOR EACH ROW EXECUTE PROCEDURE updated_at();
 
 CREATE TABLE interest_scale (
@@ -81,36 +81,36 @@ VALUES
   (4, 'I have lots of experience and can teach others this.'),
   (5, 'I would feel comfortable having a team of people rely on me for this.');
 
-CREATE TABLE expertise_slack_user_log (
+CREATE TABLE skill_slack_user_log (
   id SERIAL PRIMARY KEY,
   slack_user_id INTEGER NOT NULL REFERENCES slack_user(id),
-  expertise_id INTEGER NOT NULL REFERENCES expertise(id),
+  skill_id INTEGER NOT NULL REFERENCES skill(id),
   interest_scale_id INTEGER NOT NULL REFERENCES interest_scale(id),
   experience_scale_id INTEGER NOT NULL REFERENCES experience_scale(id),
   reason TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
 );
-CREATE TRIGGER updated_at BEFORE UPDATE ON expertise_slack_user_log
+CREATE TRIGGER updated_at BEFORE UPDATE ON skill_slack_user_log
   FOR EACH ROW EXECUTE PROCEDURE updated_at();
 
-CREATE VIEW expertise_current AS
+CREATE VIEW skill_current AS
 WITH ranked AS (
   SELECT
     id,
     slack_user_id,
-    expertise_id,
+    skill_id,
     interest_scale_id,
     experience_scale_id,
     reason,
     created_at,
-    RANK() OVER (PARTITION BY slack_user_id, expertise_id ORDER BY created_at DESC)
-  FROM expertise_slack_user_log
+    RANK() OVER (PARTITION BY slack_user_id, skill_id ORDER BY created_at DESC)
+  FROM skill_slack_user_log
 )
 SELECT
   id,
   slack_user_id,
-  expertise_id,
+  skill_id,
   interest_scale_id,
   experience_scale_id,
   reason,
@@ -121,11 +121,11 @@ ORDER BY id;
 
 ---
 
-DROP VIEW expertise_current;
-DROP TABLE expertise_slack_user_log;
+DROP VIEW skill_current;
+DROP TABLE skill_slack_user_log;
 DROP TABLE experience_scale;
 DROP TABLE interest_scale;
-DROP TABLE expertise;
-DROP TABLE expertise_category;
+DROP TABLE skill;
+DROP TABLE skill_category;
 DROP TABLE slack_user;
 DROP TABLE slack_team;

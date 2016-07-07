@@ -11,9 +11,9 @@ export function abort(...args) {
   return error;
 }
 
-// Find matching expertises for the given search term.
-export function findExpertiseByName(teamId, search) {
-  return query.expertiseByName({teamId, search}).then(matches => {
+// Find matching skills for the given search term.
+export function findSkillByName(teamId, search) {
+  return query.skillByName({teamId, search}).then(matches => {
     let exact;
     if (matches.length > 0) {
       exact = matches.find(m => m.name.toLowerCase() === search.toLowerCase());
@@ -30,18 +30,18 @@ export function findExpertiseByName(teamId, search) {
 }
 
 // Find the best match for the given search term, and complain if necessary.
-export function findExpertiseAndHandleErrors(teamId, search) {
+export function findSkillAndHandleErrors(teamId, search) {
   const output = [];
-  return findExpertiseByName(teamId, search).then(({matches, match, exact}) => {
+  return findSkillByName(teamId, search).then(({matches, match, exact}) => {
     if (matches.length === 0) {
-      throw abort(`_No matches found for expertise "${search}"._`);
+      throw abort(`_No matches found for skill "${search}"._`);
     }
     else if (matches.length === 1) {
       output.push(`_You specified "${search}", which matches: *${matches[0].name}*._`);
     }
     else {
-      const expertiseList = matches.map(expertise => expertise.name).join(', ');
-      output.push(`_Multiple matches were found: ${expertiseList}._`);
+      const skillsList = matches.map(skill => skill.name).join(', ');
+      output.push(`_Multiple matches were found: ${skillsList}._`);
       if (exact) {
         output.push(`_You specified "${search}", which matches: *${exact.name}*._`);
       }

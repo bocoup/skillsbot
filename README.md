@@ -1,1 +1,1 @@
-# expertisebot
+# skillsbot
