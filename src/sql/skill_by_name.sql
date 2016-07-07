@@ -6,4 +6,4 @@ SELECT
 from skill sk
 INNER JOIN skill_category cat ON (cat.id = sk.skill_category_id)
 INNER JOIN slack_team team ON (team.id = cat.slack_team_id)
-WHERE team.slack_id = ${teamId} AND sk.name ILIKE '%'||${search}::text||'%'
+WHERE team.token = ${token} AND sk.name ILIKE '%'||${search}::text||'%'

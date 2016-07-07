@@ -9,13 +9,13 @@ export default createCommand({
   name: 'stats',
   description: 'Provide statistics about a given skill.',
   usage: '<skill name>',
-}, createParser(({args}, {bot, teamId}) => {
+}, createParser(({args}, {bot, token}) => {
   const search = args.join(' ');
   if (!search) {
     return false;
   }
   const output = [];
-  return findSkillAndHandleErrors(teamId, search).then(results => {
+  return findSkillAndHandleErrors(token, search).then(results => {
     const {match: {id: skillId}} = results;
     output.push(results.output);
     return Promise.all([
