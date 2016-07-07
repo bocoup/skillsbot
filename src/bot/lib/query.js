@@ -12,8 +12,8 @@ export function abort(...args) {
 }
 
 // Find matching skills for the given search term.
-export function findSkillByName(teamId, search) {
-  return query.skillByName({teamId, search}).then(matches => {
+export function findSkillByName(token, search) {
+  return query.skillByName({token, search}).then(matches => {
     let exact;
     if (matches.length > 0) {
       exact = matches.find(m => m.name.toLowerCase() === search.toLowerCase());
@@ -30,9 +30,9 @@ export function findSkillByName(teamId, search) {
 }
 
 // Find the best match for the given search term, and complain if necessary.
-export function findSkillAndHandleErrors(teamId, search) {
+export function findSkillAndHandleErrors(token, search) {
   const output = [];
-  return findSkillByName(teamId, search).then(({matches, match, exact}) => {
+  return findSkillByName(token, search).then(({matches, match, exact}) => {
     if (matches.length === 0) {
       throw abort(`_No matches found for skill "${search}"._`);
     }

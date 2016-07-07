@@ -8,13 +8,13 @@ export default createCommand({
   name: 'find',
   description: 'List all team members with the given skill, grouped by interest and experience.',
   usage: '<skill name>',
-}, createParser(({args}, {bot, teamId, getCommand}) => {
+}, createParser(({args}, {bot, token, getCommand}) => {
   const search = args.join(' ');
   if (!search) {
     return false;
   }
   const output = [];
-  return findSkillAndHandleErrors(teamId, search).then(results => {
+  return findSkillAndHandleErrors(token, search).then(results => {
     const {match: {id: skillId, name: skillName}} = results;
     const updateCommand = `update ${search.toLowerCase()}`;
     output.push(results.output);

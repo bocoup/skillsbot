@@ -286,7 +286,7 @@ export default createCommand({
       experience: Number,
       interest: Number,
     },
-  }, ({args, options: newValues, errors}, {user, teamId, getCommand}) => {
+  }, ({args, options: newValues, errors}, {user, token, getCommand}) => {
     const search = args.join(' ');
     if (!search) {
       return false;
@@ -300,7 +300,7 @@ export default createCommand({
       `View your skill list with \`${getCommand('me')}\`.`,
     ];
 
-    return findSkillAndHandleErrors(teamId, search).then(results => {
+    return findSkillAndHandleErrors(token, search).then(results => {
       output.push(results.output);
       const {match: skill} = results;
       const numProps = intExpProps.reduce((n, p) => n + (p in newValues), 0);

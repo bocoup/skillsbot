@@ -66,7 +66,6 @@ export default function createBot(token) {
             adjustArgs(message, meta) {
               return [message, Object.assign(meta, {
                 token,
-                teamId: meta.user.team_id,
                 getCommand,
               })];
             },

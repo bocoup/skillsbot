@@ -4,6 +4,6 @@ SELECT
 FROM skill sk
 INNER JOIN skill_category cat ON (sk.skill_category_id = cat.id)
 INNER JOIN slack_team team ON (cat.slack_team_id = team.id)
-WHERE team.slack_id = ${teamId} AND cat.parent_id IS NULL
+WHERE team.token = ${token} AND cat.parent_id IS NULL
 GROUP BY cat.name
 ORDER BY cat.name
