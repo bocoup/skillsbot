@@ -299,7 +299,6 @@ export default createCommand({
       message,
       `View your skill list with \`${getCommand('me')}\`.`,
     ];
-
     return query.skillByName({token, search})
       // parse matches
       .then(results => parseMatches(results, search))

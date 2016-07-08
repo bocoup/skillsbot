@@ -12,9 +12,8 @@ export function abort(...args) {
 }
 
 // Find matching item (skills or categories) for the given search term.
-export function findItemByName(token, search, table) {
-  const byNameFunction = (table === 'skill') ? 'skillByName' : 'categoryByName';
-  return query[byNameFunction]({token, search, table}).then(matches => {
+export function findItemByName(token, search, queryFunction) {
+  return queryFunction({token, search}).then(matches => {
     let exact;
     if (matches.length > 0) {
       exact = matches.find(m => m.name.toLowerCase() === search.toLowerCase());
@@ -31,19 +30,19 @@ export function findItemByName(token, search, table) {
 }
 
 // Find the best match for the given search term, and complain if necessary.
-export function findItemAndHandleErrors(token, search, table) {
+export function findItemAndHandleErrors(token, search, queryFunction) {
   const output = [];
-  const label = (table === 'skill') ? 'skill' : 'category';
-  return findItemByName(token, search, table).then(({matches, match, exact}) => {
+  return findItemByName(token, search, queryFunction).then(({matches, match, exact}) => {
+
     if (matches.length === 0) {
-      throw abort(`_No matches found for ${label} "${search}"._`);
+      throw abort(`_No matches found for "${search}"._`);
     }
     else if (matches.length === 1) {
       output.push(`_You specified "${search}", which matches: *${matches[0].name}*._`);
     }
     else {
-      const skillsList = matches.map(skill => skill.name).join(', ');
-      output.push(`_Multiple matches were found: ${skillsList}._`);
+      const itemsList = matches.map(item => item.name).join(', ');
+      output.push(`_Multiple matches were found: ${itemsList}._`);
       if (exact) {
         output.push(`_You specified "${search}", which matches: *${exact.name}*._`);
       }
@@ -65,4 +64,46 @@ export function findItemAndHandleErrors(token, search, table) {
     }
     throw error;
   });
+}
+
+// Add item (skills or categories) with a given name.
+export function addItemByName(token, name, queryFunction) {
+  return query[queryFunction]({token, name});
+}
+
+// Add a new item (skills or categories) for a given term, and complain if necessary.
+export function addItemAndHandleErrors(token, search, findFunction, addFunction) {
+  const output = [];
+
+  // first check if item already exists
+  return findItemByName(token, search, findFunction).then(({matches, match, exact}) => {
+
+    // if not, then add item and let them know it was added
+    if (matches.length === 0) {
+      return addItemByName(token, search, addFunction).then(results => {
+        output.push(`_You have successfully added "${search}"._`);
+        return {output};
+      });
+    }
+
+    // else suggest they use list
+    const itemsList = matches.map(item => item.name).join(', ');
+    output.push(`_You specified "${search}", which matches: *${itemsList}*. ` +
+      `Try using the \`list\` command to see what items already exist._`);
+    return {
+      matches,
+      match,
+      exact,
+      output,
+    };
+  })
+  .catch(error => {
+    // If abort was used, re-throw with abort so the output propagates!
+    if (error.abortData) {
+      throw abort(...output, error.abortData);
+    }
+    throw error;
+  });
+
+
 }
