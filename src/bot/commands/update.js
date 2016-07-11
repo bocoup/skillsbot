@@ -3,7 +3,7 @@ import moment from 'moment';
 import heredoc from 'heredoc-tag';
 import {createCommand, createMatcher, createParser} from 'chatter';
 import {one, oneOrNone, none, query} from '../../services/db';
-import {findSkillAndHandleErrors, abort} from '../lib/query';
+import {parseMatches, prepareMatchOutput, throwIfMatchErrors, abort} from '../lib/matching';
 import {questions} from '../lib/dialog';
 
 const intExpProps = ['interest', 'experience'];
@@ -300,32 +300,40 @@ export default createCommand({
       `View your skill list with \`${getCommand('me')}\`.`,
     ];
 
-    return findSkillAndHandleErrors(token, search).then(results => {
-      output.push(results.output);
-      const {match: skill} = results;
-      const numProps = intExpProps.reduce((n, p) => n + (p in newValues), 0);
-      if (numProps === 1) {
-        throw abort(`_You must update both interest and experience at the same time._`);
-      }
-      else if (numProps === 2) {
-        return updateSkill({userId, skill, newValues}).then(done);
-      }
-      const updateCommand = `update ${search.toLowerCase()}`;
-      return updateSkillDialog({
-        userId,
-        skill,
-        updateCommand,
-        getCommand,
-        oneTimeHeader: output.splice(0, output.length),
-        done,
+    return query.skillByName({token, search})
+      // parse matches
+      .then(results => parseMatches(results, search))
+      // return the matches and output
+      .then(prepareMatchOutput)
+      // handle any errors
+      .then(throwIfMatchErrors)
+      // use results to find users for matching skill
+      .then(results => {
+        output.push(results.output);
+        const {match: skill} = results;
+        const numProps = intExpProps.reduce((n, p) => n + (p in newValues), 0);
+        if (numProps === 1) {
+          throw abort(`_You must update both interest and experience at the same time._`);
+        }
+        else if (numProps === 2) {
+          return updateSkill({userId, skill, newValues}).then(done);
+        }
+        const updateCommand = `update ${search.toLowerCase()}`;
+        return updateSkillDialog({
+          userId,
+          skill,
+          updateCommand,
+          getCommand,
+          oneTimeHeader: output.splice(0, output.length),
+          done,
+        });
+      })
+      // Error! Print all cached output + error message + usage info, or re-throw.
+      .catch(error => {
+        if (error.abortData) {
+          return [output, error.abortData];
+        }
+        throw error;
       });
-    })
-    // Error! Print all cached output + error message + usage info, or re-throw.
-    .catch(error => {
-      if (error.abortData) {
-        return [output, error.abortData];
-      }
-      throw error;
-    });
   }),
 ]);
