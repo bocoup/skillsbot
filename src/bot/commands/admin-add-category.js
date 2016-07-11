@@ -1,8 +1,6 @@
+import {query} from '../../services/db';
 import {createCommand, createParser} from 'chatter';
-import {addItemAndHandleErrors} from '../lib/query';
-
-const findFunction = 'categoryByName';
-const addFunction = 'categoryInsert';
+import {parseMatches, prepareAddOutput, throwIfMatchErrors} from '../lib/matching';
 
 export default createCommand({
   name: 'admin add category',
@@ -14,16 +12,35 @@ export default createCommand({
     return false;
   }
   const output = [];
-  return addItemAndHandleErrors(token, search, findFunction, addFunction).then(results => {
-    output.push(results.output);
-  })
-  // Success! Print all cached output + final message.
-  .then(message => [output, message])
-  // Error! Print all cached output + error message + usage info, or re-throw.
-  .catch(error => {
-    if (error.abortData) {
-      return [output, error.abortData];
-    }
-    throw error;
-  });
+  return query.categoryByName({token, search})
+    // parse matches
+    .then(results => parseMatches(results, search))
+    // return the matches and output
+    .then(results => prepareAddOutput(results, token))
+    .then(results => {
+
+      // if matches do not exist, add new category
+      const {matches} = results;
+      if (matches.length === 0) {
+        return query.categoryInsert({token, name: search})
+          .then(() => {
+            output.push(`_You have successfully added "${search}"._`);
+            return {output};
+          });
+      }
+      return results;
+    })
+    // handle any errors
+    .then(throwIfMatchErrors)
+    // use results
+    .then(results => {
+      return results.output;
+    })
+    // Error! Print all cached output + error message + usage info, or re-throw.
+    .catch(error => {
+      if (error.abortData) {
+        return [output, error.abortData];
+      }
+      throw error;
+    });
 }));

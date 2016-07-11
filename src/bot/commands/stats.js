@@ -3,7 +3,6 @@ import {createCommand, createParser} from 'chatter';
 import heredoc from 'heredoc-tag';
 import {query, one} from '../../services/db';
 import {parseMatches, prepareMatchOutput, throwIfMatchErrors} from '../lib/matching';
->>>>>>> pass functions and not strings to finditemandhandleerrors
 import {formatSkillStats} from '../lib/formatting';
 
 export default createCommand({
