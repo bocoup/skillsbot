@@ -166,5 +166,7 @@ secret_user: "{{ lookup('env', 'USER') }}"
 secret_server: nest.bocoup.com
 secret_path: /mnt/secrets
 secret_vars:
+  - src: bocoup-db-production
+    dest: BOCOUP_DB
   - src: skillsbot-slack
     dest: BOT_KEYS
