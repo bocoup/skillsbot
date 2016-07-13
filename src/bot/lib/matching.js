@@ -59,12 +59,13 @@ export function prepareMatchOutput(matchResults) {
 
 // processes matches for additions and returns output for dialogue
 export function prepareAddOutput(matchResults, token) {
-  const {matches, match, exact} = matchResults;
+  const {search, matches, match, exact} = matchResults;
   const output = [];
   const errors = [];
   // suggest list if there are matches
   if (matches.length !== 0) {
-    errors.push(`_Try using the \`list\` command to see what items already exist._`);
+    errors.push(`_Existing matches for "${search}" were found. ` +
+      `You can use the \`list\` command to see what items already exist before trying to create them._`);
   }
 
   return {
@@ -77,7 +78,7 @@ export function prepareAddOutput(matchResults, token) {
 }
 
 // rethrow abort errors so the output propogates
-export function throwIfMatchErrors(results) {
+export function throwIfErrors(results) {
   const {output, errors} = results;
   if (errors && errors.length) {
     throw abort(...output, ...errors);

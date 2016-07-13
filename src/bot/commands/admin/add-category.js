@@ -1,9 +1,9 @@
-import {query} from '../../services/db';
+import {query} from '../../../services/db';
 import {createCommand, createParser} from 'chatter';
-import {parseMatches, prepareAddOutput, throwIfMatchErrors} from '../lib/matching';
+import {parseMatches, prepareAddOutput, throwIfErrors} from '../../lib/matching';
 
 export default createCommand({
-  name: 'admin add category',
+  name: 'add category',
   description: 'Add a new skills category.',
   usage: '<category name>',
 }, createParser(({args}, {bot, token, getCommand}) => {
@@ -31,7 +31,7 @@ export default createCommand({
       return results;
     })
     // handle any errors
-    .then(throwIfMatchErrors)
+    .then(throwIfErrors)
     // use results
     .then(results => {
       return results.output;
