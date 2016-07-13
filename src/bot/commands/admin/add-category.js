@@ -16,13 +16,14 @@ export default createCommand({
     // parse matches
     .then(results => parseMatches(results, search))
     // return the matches and output
-    .then(results => prepareAddOutput(results, token))
+    .then(prepareAddOutput)
+        // handle any errors
+    .then(throwIfErrors)
+    // if matches do not exist, add new category
     .then(results => {
-
-      // if matches do not exist, add new category
       const {matches} = results;
       if (matches.length === 0) {
-        return query.categoryInsert({token, name: search})
+        return query.categoryInsert({token, name: search, isActive: true})
           .then(() => {
             output.push(`_You have successfully added "${search}"._`);
             return {output};
@@ -30,9 +31,7 @@ export default createCommand({
       }
       return results;
     })
-    // handle any errors
-    .then(throwIfErrors)
-    // use results
+    // return output for bot dialogue
     .then(results => {
       return results.output;
     })

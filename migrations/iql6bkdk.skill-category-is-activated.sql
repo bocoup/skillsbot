@@ -1,0 +1,3 @@
+ALTER TABLE skill ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE skill_category ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT false;
+---
