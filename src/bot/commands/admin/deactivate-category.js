@@ -32,9 +32,7 @@ export default createCommand({
       return results;
     })
     // return output for bot dialogue
-    .then(results => {
-      return results.output;
-    })
+    .get('output')
     // Error! Print all cached output + error message + usage info, or re-throw.
     .catch(error => {
       if (error.abortData) {
