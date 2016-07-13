@@ -57,10 +57,30 @@ export function prepareMatchOutput(matchResults) {
   };
 }
 
+// processes matches for additions and returns output for dialogue
+export function prepareAddOutput(matchResults, token) {
+  const {search, matches, match, exact} = matchResults;
+  const output = [];
+  const errors = [];
+  // suggest list if there are matches
+  if (matches.length !== 0) {
+    errors.push(`_Existing matches for "${search}" were found. ` +
+      `You can use the \`list\` command to see what items already exist before trying to create them._`);
+  }
+
+  return {
+    matches,
+    match,
+    exact,
+    output,
+    errors,
+  };
+}
+
 // rethrow abort errors so the output propogates
-export function throwIfMatchErrors(results) {
+export function throwIfErrors(results) {
   const {output, errors} = results;
-  if (errors.length) {
+  if (errors && errors.length) {
     throw abort(...output, ...errors);
   }
   return results;

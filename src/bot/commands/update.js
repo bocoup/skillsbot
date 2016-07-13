@@ -3,7 +3,7 @@ import moment from 'moment';
 import heredoc from 'heredoc-tag';
 import {createCommand, createMatcher, createParser} from 'chatter';
 import {one, oneOrNone, none, query} from '../../services/db';
-import {parseMatches, prepareMatchOutput, throwIfMatchErrors, abort} from '../lib/matching';
+import {parseMatches, prepareMatchOutput, throwIfErrors, abort} from '../lib/matching';
 import {questions} from '../lib/dialog';
 
 const intExpProps = ['interest', 'experience'];
@@ -299,14 +299,13 @@ export default createCommand({
       message,
       `View your skill list with \`${getCommand('me')}\`.`,
     ];
-
     return query.skillByName({token, search})
       // parse matches
       .then(results => parseMatches(results, search))
       // return the matches and output
       .then(prepareMatchOutput)
       // handle any errors
-      .then(throwIfMatchErrors)
+      .then(throwIfErrors)
       // use results to find users for matching skill
       .then(results => {
         output.push(results.output);

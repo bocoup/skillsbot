@@ -1,7 +1,7 @@
 import Promise from 'bluebird';
 import {createCommand, createParser} from 'chatter';
 import {query, one} from '../../services/db';
-import {parseMatches, prepareMatchOutput, throwIfMatchErrors} from '../lib/matching';
+import {parseMatches, prepareMatchOutput, throwIfErrors} from '../lib/matching';
 import {formatByInterestAndExperience} from '../lib/formatting';
 
 export default createCommand({
@@ -20,7 +20,7 @@ export default createCommand({
     // return the matches and output
     .then(prepareMatchOutput)
     // handle any errors
-    .then(throwIfMatchErrors)
+    .then(throwIfErrors)
     // use results to find users for matching skill
     .then(results => {
       const {match: {id: skillId, name: skillName}} = results;
