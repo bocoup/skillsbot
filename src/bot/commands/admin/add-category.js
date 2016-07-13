@@ -21,11 +21,10 @@ export default createCommand({
     .then(throwIfErrors)
     // if matches do not exist, add new category
     .then(results => {
-      const {matches} = results;
-      if (matches.length === 0) {
+      const {exact} = results;
+      if (!exact) {
         return query.categoryInsert({token, name: search, isActive: true})
           .then(() => {
-            console.log('got it');
             output.push(`_You have successfully added "${search}"._`);
             return {output};
           });

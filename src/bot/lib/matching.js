@@ -63,8 +63,7 @@ export function prepareAddOutput(matchResults) {
   const output = [];
   const errors = [];
   // suggest list if there are matches
-  console.log(matches);
-  if (matches.length !== 0) {
+  if (exact) {
     errors.push(`_Existing matches for "${search}" were found. ` +
       `You can use the \`list\` command to see what items already exist before trying to create them._`);
   }
