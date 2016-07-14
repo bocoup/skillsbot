@@ -170,11 +170,11 @@ secret_path: /mnt/secrets
 secret_vars:
   - src: htpassword
     dest: HTPASSWORD
-  - src: rds
+  - src: rds-bocoup-db/connection
     dest: RDS
-  - src: skillsbot-db
+  - src: rds-bocoup-db/db/skillsbot
     dest: BOT_DB
-  - src: skillsbot-slack
-    dest: BOT_KEYS
-  - src: bocoup-db-production
+  - src: skillsbot/slack-production
+    dest: BOT_SLACK
+  - src: rds-bocoup-db/db/bocoup
     dest: BOCOUP_DB
