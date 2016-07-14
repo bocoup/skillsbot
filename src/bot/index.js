@@ -11,6 +11,7 @@ import scalesCommand from './commands/scales';
 import statsCommand from './commands/stats';
 import updateCommand from './commands/update';
 import adminCommand from './commands/admin';
+import versionCommand from './commands/version';
 import bocoupImportCommand from './commands/bocoup-import';
 
 export default function createBot(token) {
@@ -56,6 +57,7 @@ export default function createBot(token) {
         statsCommand,
         updateCommand,
         adminCommand,
+        versionCommand,
         ...bocoupCommands,
         ...(config.isProduction ? [] : devCommands),
       ]);
