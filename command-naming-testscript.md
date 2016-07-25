@@ -42,3 +42,5 @@ Commands:
 - help 
 
 
+# Conclusion
+Thank you for participating in the usability test. We will share the results at Grunch and on github. If you are interested in staying involved in the project, you can take a look at the Skillsbot repository. 
