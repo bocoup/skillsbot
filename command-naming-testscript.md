@@ -32,6 +32,13 @@ First, I'm just going to ask you to ask you to run a few commands. Prior to runn
 And again, as much as possible, **it will help us if you can try to think out loud so we know what you're thinking about.**
 
 Commands:
-
+- find
+- for
+- me 
+- list 
+- scales 
+- stats 
+- update 
+- help 
 
 
