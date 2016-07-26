@@ -58,12 +58,32 @@ export function prepareMatchOutput(matchResults) {
 }
 
 // processes matches for additions and returns output for dialogue
-export function prepareAddOutput(matchResults, token) {
+export function prepareAddOutput(matchResults) {
   const {search, matches, match, exact} = matchResults;
   const output = [];
   const errors = [];
   // suggest list if there are matches
-  if (matches.length !== 0) {
+  if (exact) {
+    errors.push(`_Existing matches for "${search}" were found. ` +
+      `You can use the \`list\` command to see what items already exist before trying to create them._`);
+  }
+
+  return {
+    matches,
+    match,
+    exact,
+    output,
+    errors,
+  };
+}
+
+// processes matches for updates and returns output for dialogue
+export function prepareUpdateOutput(matchResults) {
+  const {search, matches, match, exact} = matchResults;
+  const output = [];
+  const errors = [];
+  // suggest list if there are matches
+  if (matches.length !== 1) {
     errors.push(`_Existing matches for "${search}" were found. ` +
       `You can use the \`list\` command to see what items already exist before trying to create them._`);
   }
