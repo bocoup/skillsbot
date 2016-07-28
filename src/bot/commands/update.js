@@ -3,7 +3,7 @@ import moment from 'moment';
 import heredoc from 'heredoc-tag';
 import {createCommand, createMatcher, createParser} from 'chatter';
 import {one, oneOrNone, none, query} from '../../services/db';
-import {parseMatches, prepareMatchOutput, throwIfErrors, abort} from '../lib/matching';
+import {getBestMatch} from '../lib/matching';
 import {questions} from '../lib/dialog';
 
 const intExpProps = ['interest', 'experience'];
@@ -292,47 +292,40 @@ export default createCommand({
       return false;
     }
     const userId = user.id;
-    const output = [...errors];
-    // Print all cached output + final message + tag line.
+    const buffer = [...errors];
+    // Print all buffered output + final message + tag line.
     const done = message => [
-      output,
+      buffer,
       message,
       `View your skill list with \`${getCommand('me')}\`.`,
     ];
     return query.skillByName({token, search})
-      // parse matches
-      .then(results => parseMatches(results, search))
-      // return the matches and output
-      .then(prepareMatchOutput)
-      // handle any errors
-      .then(throwIfErrors)
-      // use results to find users for matching skill
-      .then(results => {
-        output.push(results.output);
-        const {match: skill} = results;
-        const numProps = intExpProps.reduce((n, p) => n + (p in newValues), 0);
-        if (numProps === 1) {
-          throw abort(`_You must update both interest and experience at the same time._`);
-        }
-        else if (numProps === 2) {
-          return updateSkill({userId, skill, newValues}).then(done);
-        }
-        const updateCommand = `update ${search.toLowerCase()}`;
-        return updateSkillDialog({
-          userId,
-          skill,
-          updateCommand,
-          getCommand,
-          oneTimeHeader: output.splice(0, output.length),
-          done,
-        });
-      })
-      // Error! Print all cached output + error message + usage info, or re-throw.
-      .catch(error => {
-        if (error.abortData) {
-          return [output, error.abortData];
-        }
-        throw error;
+    .then(matches => {
+      // Test if match is good, ambiguous, etc.
+      const {match: skill, output} = getBestMatch(search, matches);
+      // Add any output from the test to the buffer.
+      buffer.push(output);
+      // Exit now if match was ambiguous.
+      if (!skill) {
+        return buffer;
+      }
+      const numProps = intExpProps.reduce((n, p) => n + (p in newValues), 0);
+      if (numProps === 1) {
+        buffer.push(`_You must update both interest and experience at the same time._`);
+        return buffer;
+      }
+      else if (numProps === 2) {
+        return updateSkill({userId, skill, newValues}).then(done);
+      }
+      const updateCommand = `update ${search.toLowerCase()}`;
+      return updateSkillDialog({
+        userId,
+        skill,
+        updateCommand,
+        getCommand,
+        oneTimeHeader: buffer.splice(0, buffer.length),
+        done,
       });
+    });
   }),
 ]);

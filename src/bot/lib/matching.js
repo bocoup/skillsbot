@@ -1,16 +1,8 @@
-// =============
-// MATCHING HELPERS
-// =============
-
-// Error-throwing helper function for bot promise chains.
-export function abort(...args) {
-  const error = new Error();
-  error.abortData = args;
-  return error;
-}
+import heredoc from 'heredoc-tag';
+import OutputBuffer from './output-buffer';
 
 // Find matching items for the given search term.
-export function parseMatches(matches, search) {
+export function getMatchDetails(search, matches) {
   let exact;
   if (matches.length > 0) {
     exact = matches.find(m => m.name.toLowerCase() === search.toLowerCase());
@@ -26,62 +18,48 @@ export function parseMatches(matches, search) {
   };
 }
 
-// processes matches and returns output for dialogue
-export function prepareMatchOutput(matchResults) {
-  const {search, matches, match, exact} = matchResults;
-  const output = [];
-  const errors = [];
-
+// Test to see if a match was ambiguous.
+export function getBestMatch(search, matches) {
+  // Create a buffer in which output messages can accumulate.
+  const buffer = new OutputBuffer();
+  // No matches found = fail!
   if (matches.length === 0) {
-    errors.push(`_No matches found for "${search}"._`);
+    buffer.push(`_No matches found for "${search}"._`);
+    return buffer.result();
   }
-  else if (matches.length === 1) {
-    output.push(`_You specified "${search}", which matches: *${matches[0].name}*._`);
+  // Get match details.
+  const {exact, match} = getMatchDetails(search, matches);
+  // There was one match. A match with no ambiguity = success!
+  if (matches.length === 1) {
+    buffer.push(`_You specified "${search}", which matches: *${match.name}*._`);
+    return buffer.result({match});
   }
-  else {
-    const list = matches.map(item => item.name).join(', ');
-    output.push(`_Multiple matches were found: ${list}._`);
-    if (exact) {
-      output.push(`_You specified "${search}", which matches: *${exact.name}*._`);
-    }
-    else {
-      errors.push(`_You specified "${search}", which is ambiguous. Please be more specific._`);
-    }
+  // There were multiple matches.
+  const list = matches.map(item => item.name).join(', ');
+  buffer.push(`_Multiple matches were found: ${list}._`);
+  // An exact match = success!
+  if (exact) {
+    buffer.push(`_You specified "${search}", which matches: *${exact.name}*._`);
+    return buffer.result({match: exact});
   }
-  return {
-    matches,
-    match,
-    exact,
-    output,
-    errors,
-  };
+  // Ambiguity = fail!
+  buffer.push(`_You specified "${search}", which is ambiguous. Please be more specific._`);
+  return buffer.result();
 }
 
-// processes matches for additions and returns output for dialogue
-export function prepareAddOutput(matchResults, token) {
-  const {search, matches, match, exact} = matchResults;
-  const output = [];
-  const errors = [];
-  // suggest list if there are matches
-  if (matches.length !== 0) {
-    errors.push(`_Existing matches for "${search}" were found. ` +
-      `You can use the \`list\` command to see what items already exist before trying to create them._`);
+// Test to see if a match is a duplicate.
+export function testDuplicateMatch(search, matches) {
+  // Create a buffer in which output messages can accumulate.
+  const buffer = new OutputBuffer();
+  // Get match details.
+  const {exact} = getMatchDetails(search, matches);
+  // An exact match = fail!
+  if (exact) {
+    buffer.push(heredoc.trim.oneline`
+      _You specified "${search}", which matches: *${exact.name}*.
+      Please use the \`list\` command to see what already exists
+      before trying to add something new._
+    `);
   }
-
-  return {
-    matches,
-    match,
-    exact,
-    output,
-    errors,
-  };
-}
-
-// rethrow abort errors so the output propogates
-export function throwIfErrors(results) {
-  const {output, errors} = results;
-  if (errors && errors.length) {
-    throw abort(...output, ...errors);
-  }
-  return results;
+  return buffer.result({isDuplicate: Boolean(exact)});
 }
