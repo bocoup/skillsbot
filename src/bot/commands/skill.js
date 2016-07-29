@@ -35,7 +35,9 @@ export default createCommand({
     ])
     .spread((userData, outstanding) => [
       ...buffer,
-      outstanding && `> *No data for:* ${outstanding.map(bot.formatId).join(', ')}`,
+      (match.description || outstanding) && '',
+      match.description && [match.description, ''],
+      outstanding && `> No data for ${outstanding.map(bot.formatId).join(', ')}`,
       formatByInterestAndExperience(userData, o => o.users.map(bot.formatId).join(', ')),
       `_Update your *${skillName}* skill with_ \`${getCommand(updateCommand)}\`.`,
     ]);
