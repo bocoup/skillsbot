@@ -36,7 +36,7 @@ export default function createBot(token) {
       // Helper method to format the given command name.
       const getCommand = cmd => name ? `${name} ${cmd}` : cmd;
       // Dev-only commands.
-      const devCommands = [];
+      const devCommands = [adminCommand];
       // Bocoup team-only commands.
       const bocoupCommands = [];
       if (bot.slack.rtmClient.activeTeamId === config.bocoupTeamId) {
@@ -56,7 +56,6 @@ export default function createBot(token) {
         scalesCommand,
         statsCommand,
         updateCommand,
-        adminCommand,
         versionCommand,
         ...bocoupCommands,
         ...(config.isProduction ? [] : devCommands),
