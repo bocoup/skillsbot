@@ -3,7 +3,7 @@ import {query} from '../../services/db';
 
 export default createCommand({
   name: 'list',
-  description: 'List all skills, grouped by category.',
+  description: 'List all skills.',
 }, (message, {token}) => {
   return query.skillsByCategory({token}).then(categories => {
     if (categories.length === 0) {

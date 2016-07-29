@@ -3,7 +3,7 @@ import {one} from '../../services/db';
 
 export default createCommand({
   name: 'scales',
-  description: 'List interest and experience scales.',
+  description: 'Display definitions for interest and experience scales.',
 }, () => {
   return one.scales().then(({interest, experience}) => {
     const list = arr => arr.map(([ranking, description]) => `> *${ranking}.* ${description}`);

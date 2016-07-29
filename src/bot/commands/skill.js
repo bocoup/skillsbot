@@ -5,8 +5,8 @@ import {getBestMatch} from '../lib/matching';
 import {formatByInterestAndExperience} from '../lib/formatting';
 
 export default createCommand({
-  name: 'find',
-  description: 'List all team members with the given skill, grouped by interest and experience.',
+  name: 'skill',
+  description: 'Show data for all team members for the given skill.',
   usage: '<skill name>',
 }, createParser(({args}, {bot, token, getCommand}) => {
   const search = args.join(' ');
@@ -35,7 +35,9 @@ export default createCommand({
     ])
     .spread((userData, outstanding) => [
       ...buffer,
-      outstanding && `> *No data for:* ${outstanding.map(bot.formatId).join(', ')}`,
+      (match.description || outstanding) && '',
+      match.description && [match.description, ''],
+      outstanding && `> No data for ${outstanding.map(bot.formatId).join(', ')}`,
       formatByInterestAndExperience(userData, o => o.users.map(bot.formatId).join(', ')),
       `_Update your *${skillName}* skill with_ \`${getCommand(updateCommand)}\`.`,
     ]);

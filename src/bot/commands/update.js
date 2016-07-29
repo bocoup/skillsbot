@@ -287,11 +287,28 @@ export default createCommand({
       interest: Number,
     },
   }, ({args, options: newValues, errors}, {user, token, getCommand}) => {
+    const userId = user.id;
     const search = args.join(' ');
     if (!search) {
-      return false;
+      return query.outstandingSkillsForUser({userId})
+      .then(outstandingData => {
+        const outstanding = outstandingData.map(o => o.name).join(', ');
+        return [
+          heredoc.oneline.trim`
+            Update your outstanding skills with \`${getCommand('update missing')}\`,
+            or update a specific skill with \`${getCommand('update <skill name>')}\`.
+          `,
+          outstanding ?
+            heredoc.oneline.trim`
+              > *You have ${outstandingData.length} outstanding skills that need to be updated:* ${outstanding}
+            ` :
+            heredoc.oneline.trim`
+              > You have no outstanding skills. Have your experience or interest levels changed for any skill
+              lately? If so, update them!
+            `,
+        ];
+      });
     }
-    const userId = user.id;
     const buffer = [...errors];
     // Print all buffered output + final message + tag line.
     const done = message => [
