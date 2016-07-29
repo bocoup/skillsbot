@@ -7,7 +7,7 @@ import {formatSkillStats} from '../lib/formatting';
 
 export default createCommand({
   name: 'stats',
-  description: 'Provide statistics about a given skill.',
+  description: 'Show statistics for the given skill.',
   usage: '<skill name>',
 }, createParser(({args}, {bot, token}) => {
   const search = args.join(' ');

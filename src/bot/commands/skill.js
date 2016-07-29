@@ -6,7 +6,7 @@ import {formatByInterestAndExperience} from '../lib/formatting';
 
 export default createCommand({
   name: 'skill',
-  description: 'List all team members with the given skill, grouped by interest and experience.',
+  description: 'Show data for all team members for the given skill.',
   usage: '<skill name>',
 }, createParser(({args}, {bot, token, getCommand}) => {
   const search = args.join(' ');
