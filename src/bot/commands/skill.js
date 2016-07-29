@@ -5,7 +5,7 @@ import {getBestMatch} from '../lib/matching';
 import {formatByInterestAndExperience} from '../lib/formatting';
 
 export default createCommand({
-  name: 'find',
+  name: 'skill',
   description: 'List all team members with the given skill, grouped by interest and experience.',
   usage: '<skill name>',
 }, createParser(({args}, {bot, token, getCommand}) => {

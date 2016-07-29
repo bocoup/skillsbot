@@ -4,7 +4,7 @@ import mixinBotHelpers from './helpers';
 import config from '../../config';
 
 // Sub-commands.
-import findCommand from './commands/find';
+import skillCommand from './commands/skill';
 import {forCommand, meCommand} from './commands/for';
 import listCommand from './commands/list';
 import scalesCommand from './commands/scales';
@@ -49,7 +49,7 @@ export default function createBot(token) {
         aliases,
         description: 'Show your skills.',
       }, [
-        findCommand,
+        skillCommand,
         forCommand,
         meCommand,
         listCommand,
