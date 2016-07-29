@@ -29,8 +29,8 @@ function forHandler(name, {bot, user, getCommand}) {
   });
 }
 
-export const forCommand = createCommand({
-  name: 'for',
+export const userCommand = createCommand({
+  name: 'user',
   description: 'List all skills for the given team member, grouped by interest and experience.',
   usage: '[me | @teammember]',
 }, createParser(({args: [name]}, meta) => forHandler(name, meta)));

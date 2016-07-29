@@ -5,7 +5,7 @@ import config from '../../config';
 
 // Sub-commands.
 import skillCommand from './commands/skill';
-import {forCommand, meCommand} from './commands/for';
+import {userCommand, meCommand} from './commands/user';
 import listCommand from './commands/list';
 import scalesCommand from './commands/scales';
 import statsCommand from './commands/stats';
@@ -50,7 +50,7 @@ export default function createBot(token) {
         description: 'Show your skills.',
       }, [
         skillCommand,
-        forCommand,
+        userCommand,
         meCommand,
         listCommand,
         scalesCommand,
