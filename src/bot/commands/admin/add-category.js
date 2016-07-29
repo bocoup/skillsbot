@@ -1,6 +1,6 @@
 import {query} from '../../../services/db';
 import {createCommand, createParser} from 'chatter';
-import {parseMatches, prepareAddOutput, throwIfErrors} from '../../lib/matching';
+import {testDuplicateMatch} from '../../lib/matching';
 
 export default createCommand({
   name: 'add category',
@@ -11,36 +11,24 @@ export default createCommand({
   if (!search) {
     return false;
   }
-  const output = [];
+  // Create a buffer in which output messages can accumulate.
+  const buffer = [];
+  // Find matching categories.
   return query.categoryByName({token, search})
-    // parse matches
-    .then(results => parseMatches(results, search))
-    // return the matches and output
-    .then(results => prepareAddOutput(results, token))
-    .then(results => {
-
-      // if matches do not exist, add new category
-      const {matches} = results;
-      if (matches.length === 0) {
-        return query.categoryInsert({token, name: search})
-          .then(() => {
-            output.push(`_You have successfully added "${search}"._`);
-            return {output};
-          });
-      }
-      return results;
-    })
-    // handle any errors
-    .then(throwIfErrors)
-    // use results
-    .then(results => {
-      return results.output;
-    })
-    // Error! Print all cached output + error message + usage info, or re-throw.
-    .catch(error => {
-      if (error.abortData) {
-        return [output, error.abortData];
-      }
-      throw error;
-    });
+  .then(matches => {
+    // Test if match is a duplicate.
+    const {isDuplicate, output} = testDuplicateMatch(search, matches);
+    // Add any output from the test to the buffer.
+    buffer.push(output);
+    // Exit now if match was a duplicate.
+    if (isDuplicate) {
+      return buffer;
+    }
+    // Insert the new category.
+    return query.categoryInsert({token, name: search})
+    .then(() => [
+      ...buffer,
+      `_You have successfully added category "${search}"._`,
+    ]);
+  });
 }));
