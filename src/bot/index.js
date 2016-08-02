@@ -1,5 +1,6 @@
 import {createSlackBot, createCommand, createConversation, createArgsAdjuster} from 'chatter';
 import {RtmClient, WebClient, MemoryDataStore} from '@slack/client';
+import {jobs, jobCommand} from './jobs';
 import mixinBotHelpers from './helpers';
 import config from '../../config';
 
@@ -57,6 +58,7 @@ export default function createBot(token) {
         statsCommand,
         scalesCommand,
         versionCommand,
+        jobCommand,
         ...bocoupCommands,
         ...(config.isProduction ? [] : devCommands),
       ]);
@@ -80,6 +82,10 @@ export default function createBot(token) {
   });
 
   mixinBotHelpers(bot);
+
+  if (config.runJobs) {
+    jobs.start({bot, token});
+  }
 
   return bot;
 

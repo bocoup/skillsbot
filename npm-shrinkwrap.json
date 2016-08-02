@@ -588,6 +588,11 @@
       "from": "core-util-is@>=1.0.0 <1.1.0",
       "resolved": "https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.2.tgz"
     },
+    "cron": {
+      "version": "1.1.0",
+      "from": "cron@latest",
+      "resolved": "https://registry.npmjs.org/cron/-/cron-1.1.0.tgz"
+    },
     "cryptiles": {
       "version": "2.0.5",
       "from": "cryptiles@>=2.0.0 <3.0.0",
@@ -1799,6 +1804,11 @@
       "version": "2.14.1",
       "from": "moment@>=2.13.0 <3.0.0",
       "resolved": "https://registry.npmjs.org/moment/-/moment-2.14.1.tgz"
+    },
+    "moment-timezone": {
+      "version": "0.3.1",
+      "from": "moment-timezone@>=0.3.0 <0.4.0",
+      "resolved": "https://registry.npmjs.org/moment-timezone/-/moment-timezone-0.3.1.tgz"
     },
     "ms": {
       "version": "0.7.1",

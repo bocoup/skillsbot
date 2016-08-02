@@ -4,6 +4,7 @@ require('dotenv').config();
 
 module.exports = {
   isProduction: process.env.NODE_ENV === 'production',
+  runJobs: process.env.RUN_JOBS,
   bocoupTeamId: 'T025GMFDP',
   app: {
     host: process.env.HOST || '0.0.0.0',
