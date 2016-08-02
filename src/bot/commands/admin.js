@@ -6,8 +6,7 @@ import {createCommand} from 'chatter';
 // import Sub-commands
 import addCategory from './admin/add-category';
 import updateCategory from './admin/update-category';
-import activateCategory from './admin/activate-category';
-import deactivateCategory from './admin/deactivate-category';
+import {activateCategory, deactivateCategory} from './admin/activate-category';
 
 export default createCommand({
   name: 'admin',
