@@ -14,6 +14,7 @@ export default function mixinBotHelpers(target) {
 const dataStoreMethods = [
   'getUserById',
   'getUserByName',
+  'getDMByName',
   'getTeamById',
   'getChannelGroupOrDMById',
   'getChannelOrGroupByName',
@@ -52,4 +53,10 @@ bot.formatUser = function(name) {
 // Get formatted slackname, eg: <@U025GMQTB>
 bot.formatId = function(id) {
   return `<@${id}>`;
+};
+
+// Get DM by user id
+bot.getDMByUserId = function(id) {
+  const {name} = this.getUserById(id) || {};
+  return name && this.getDMByName(name) || {};
 };
