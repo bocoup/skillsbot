@@ -29,14 +29,14 @@ const activateHander = isActive => ({args}, {bot, token, getCommand}) => {
   });
 };
 
-export const activateCategory = createCommand({
-  name: 'activate category',
+export const categoryActivate = createCommand({
+  name: 'category activate',
   description: 'Activate a skill category.',
   usage: '<category name>',
 }, createParser(activateHander(true)));
 
-export const deactivateCategory = createCommand({
-  name: 'deactivate category',
+export const categoryDeactivate = createCommand({
+  name: 'category deactivate',
   description: 'Deactivate a skill category.',
   usage: '<category name>',
 }, createParser(activateHander(false)));
