@@ -1,12 +1,11 @@
 import {one} from '../../../services/db';
 import {createCommand} from 'chatter';
-
-const pluralizeOn = n => s => s.split('/')[Number(Number(n) !== 1)];
+import {pluralizeOn} from '../../../util/localization';
 
 function formatCategory(header, arr) {
   const items = arr.length === 0 ? ['(none)'] : arr.map(([name, skillsCount]) => {
     const p = pluralizeOn(skillsCount);
-    return `${name} (${skillsCount} skill${p('/s')})`;
+    return `${name} (${p} skill${p()})`;
   });
   return [
     `*${header} categories*`,

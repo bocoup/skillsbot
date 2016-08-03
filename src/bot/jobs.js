@@ -2,10 +2,9 @@ import {createMatcher} from 'chatter';
 
 import Scheduler from '../util/scheduler';
 import {query} from '../services/db';
+import {pluralizeOn} from '../util/localization';
 
 export const jobs = new Scheduler();
-
-const pluralizeOn = n => s => s.split('/')[Number(n !== 1)];
 
 export function notifyMissing({bot, token, debug} = {}) {
   const buffer = [];
@@ -27,7 +26,7 @@ export function notifyMissing({bot, token, debug} = {}) {
     const cmdPrefix = dmId ? '' : `/msg <@${bot.slack.rtmClient.activeUserId}> `;
     // Construct the message for this user.
     const message = [
-      `*You have ${skills.length} outstanding skill${p('/s')} that need${p('s/')} to be updated.*`,
+      `*You have ${p} outstanding skill${p()} that need${p('s/')} to be updated.*`,
       `Please update ${p('it/them')} with \`${cmdPrefix}update missing\`.`,
     ];
     // If in debug mode, buffer the message instead of actually sending it.
@@ -40,7 +39,7 @@ export function notifyMissing({bot, token, debug} = {}) {
   // Done.
   .then(results => {
     const p = pluralizeOn(results.length);
-    push(`Job done, ${results.length} user${p('/s')} processed.`);
+    push(`Job done, ${p} user${p()} processed.`);
   })
   // Handle errors.
   .catch(e => push(`Error: ${e.message}`))
