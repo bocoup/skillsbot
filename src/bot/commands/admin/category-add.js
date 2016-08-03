@@ -6,7 +6,7 @@ export default createCommand({
   name: 'category add',
   description: 'Add a new skill category.',
   usage: '<category name>',
-}, createParser(({args}, {bot, token, getCommand}) => {
+}, createParser(({args}, {token}) => {
   const search = args.join(' ');
   if (!search) {
     return false;

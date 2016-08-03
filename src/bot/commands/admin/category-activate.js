@@ -2,7 +2,7 @@ import {query} from '../../../services/db';
 import {createCommand, createParser} from 'chatter';
 import {getBestMatch} from '../../lib/matching';
 
-const activateHander = isActive => ({args}, {bot, token, getCommand}) => {
+const activateHander = isActive => ({args}, {token}) => {
   const search = args.join(' ');
   if (!search) {
     return false;
