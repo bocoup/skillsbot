@@ -3,10 +3,10 @@ import {createCommand, createParser} from 'chatter';
 import {testDuplicateMatch} from '../../lib/matching';
 
 export default createCommand({
-  name: 'add category',
-  description: 'Add a new skills category.',
+  name: 'category add',
+  description: 'Add a new skill category.',
   usage: '<category name>',
-}, createParser(({args}, {bot, token, getCommand}) => {
+}, createParser(({args}, {token}) => {
   const search = args.join(' ');
   if (!search) {
     return false;

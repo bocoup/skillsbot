@@ -1,9 +1,9 @@
 import {createCommand, createParser} from 'chatter';
 
 export default createCommand({
-  name: 'update category',
-  description: 'Update a new skills category.',
+  name: 'category update',
+  description: 'Update a new skill category.',
   usage: '<category name>',
 }, createParser(({args}) => {
-  return 'update category command coming soon';
+  return 'update command coming soon';
 }));
