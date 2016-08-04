@@ -31,7 +31,7 @@ export default createCommand({
       const p = pluralizeOn(skills.length);
       return [
         `The category name is *${name}*`,
-        `The category state is *${isActive ? 'active' : 'deactivated'}*.`,
+        `The category state is *${isActive ? 'enabled' : 'disabled'}*.`,
         `There ${p('is/are')} *${p}* skill${p()} that belong to this category:`,
         `> ${skills.join(', ')}`,
       ];

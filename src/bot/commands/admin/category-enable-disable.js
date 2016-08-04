@@ -2,7 +2,7 @@ import {query} from '../../../services/db';
 import {createCommand, createParser} from 'chatter';
 import {getBestMatch} from '../../lib/matching';
 
-const activateHander = isActive => ({args}, {token}) => {
+const getHandler = isActive => ({args}, {token}) => {
   const search = args.join(' ');
   if (!search) {
     return false;
@@ -20,23 +20,23 @@ const activateHander = isActive => ({args}, {token}) => {
     if (!match) {
       return buffer;
     }
-    // Deactivate the category.
+    // Enable or disable the category.
     return query.categorySetActive({categoryId: match.id, isActive})
     .then(() => [
       ...buffer,
-      `_You have successfully ${isActive ? '' : 'de'}activated category "${search}"._`,
+      `_You have successfully ${isActive ? 'enabled' : 'disabled'} category "${search}"._`,
     ]);
   });
 };
 
-export const categoryActivate = createCommand({
-  name: 'category activate',
-  description: 'Activate a skill category.',
+export const categoryEnable = createCommand({
+  name: 'category enable',
+  description: 'Enable a skill category.',
   usage: '<category name>',
-}, createParser(activateHander(true)));
+}, createParser(getHandler(true)));
 
-export const categoryDeactivate = createCommand({
-  name: 'category deactivate',
-  description: 'Deactivate a skill category.',
+export const categoryDisable = createCommand({
+  name: 'category disable',
+  description: 'Disable a skill category.',
   usage: '<category name>',
-}, createParser(activateHander(false)));
+}, createParser(getHandler(false)));

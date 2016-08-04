@@ -8,7 +8,7 @@ import categoryList from './admin/category-list';
 import categoryInfo from './admin/category-info';
 import categoryAdd from './admin/category-add';
 import categoryUpdate from './admin/category-update';
-import {categoryActivate, categoryDeactivate} from './admin/category-activate';
+import {categoryEnable, categoryDisable} from './admin/category-enable-disable';
 
 export default createCommand({
   name: 'admin',
@@ -18,6 +18,6 @@ export default createCommand({
   categoryInfo,
   categoryAdd,
   categoryUpdate,
-  categoryActivate,
-  categoryDeactivate,
+  categoryEnable,
+  categoryDisable,
 ]);

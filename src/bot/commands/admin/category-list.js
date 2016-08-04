@@ -22,8 +22,8 @@ export default createCommand({
       return 'No skill categories have been defined for your team yet.';
     }
     return [
-      formatCategory('Active', active),
-      formatCategory('Inactive', inactive),
+      formatCategory('Enabled', active),
+      formatCategory('Disabled', inactive),
     ];
   });
 });
