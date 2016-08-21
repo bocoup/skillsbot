@@ -26,7 +26,7 @@ export function notifyMissing({bot, token, debug} = {}) {
     const cmdPrefix = dmId ? '' : `/msg <@${bot.slack.rtmClient.activeUserId}> `;
     // Construct the message for this user.
     const message = [
-      `*You have ${p} outstanding skill${p()} that need${p('s/')} to be updated.*`,
+      `*We're tracking some new skills! There ${p('is/are')} ${p} left we'd like to know about.*`,
       `Please update ${p('it/them')} with \`${cmdPrefix}update missing\`.`,
     ];
     // If in debug mode, buffer the message instead of actually sending it.
