@@ -18,3 +18,8 @@
 - name: copy existing npm modules
   command: cp -R {{site_path}}/node_modules {{clone_path}}
   when: package_diff.rc == 0
+
+- name: ensure database has the latest migrations
+  shell: "npm run migrate:up"
+  args:
+    chdir: "{{clone_path}}"
