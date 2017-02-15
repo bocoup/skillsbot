@@ -36,6 +36,11 @@ export default class BotRunner {
     }
   }
 
+  // Find the first bot for which "fn" returns true.
+  findBot(fn) {
+    return Object.keys(this.bots).map(k => this.bots[k]).find(fn);
+  }
+
   startOrStopBots() {
     this.getIntegrations().then(({active = [], inactive = []}) => {
       active.forEach(token => this.startBot(token));
