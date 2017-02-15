@@ -14,7 +14,7 @@
     -keyout {{ssl_key_path}} -out {{ssl_cert_path}} -extensions v3_ca
   args:
     creates: "{{ssl_cert_path}}"
-  when: inventory_hostname == "vagrant"
+  when: "{{inventory_hostname == 'vagrant'}}"
   notify: restart nginx
 
 - name: ensure ssl cert/key exist
@@ -25,7 +25,7 @@
     - "{{ssl_key_path}}"
 
 - fail: msg="ssl cert file {{ssl_cert_path}} missing"
-  when: not ssl_files.results[0].stat.exists
+  when: "{{not ssl_files.results[0].stat.exists}}"
 
 - fail: msg="ssl key file {{ssl_key_path}} missing"
-  when: not ssl_files.results[1].stat.exists
+  when: "{{not ssl_files.results[1].stat.exists}}"

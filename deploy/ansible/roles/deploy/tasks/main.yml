@@ -8,7 +8,7 @@
   register: commit_dir
 
 - include: checkout.yml
-  when: force or not commit_dir.stat.exists
+  when: "{{force or not commit_dir.stat.exists}}"
 
 - name: link sha-named clone to make it live
   file:
@@ -37,7 +37,7 @@
   changed_when: remove_result.stdout != ""
   args:
     chdir: "{{base_path}}"
-  when: keep_n_most_recent is defined
+  when: "{{keep_n_most_recent is defined}}"
 
 - name: ensure slack_bot has been restarted
   service:
